@@ -26,8 +26,17 @@ services:
       - POSTGRES_DB=ewm-stats
 
   ewm-service:
+    build: ./main-service/
+    container_name: ewm-service
     ports:
       - "8080:8080"
 
   ewm-db:
     image: postgres:14-alpine
+    container_name: ewm-db
+    ports:
+      - "6542:5432"
+    environment:
+      - POSTGRES_DB=ewm-service-db
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
