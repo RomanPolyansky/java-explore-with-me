@@ -11,9 +11,17 @@
 
     <artifactId>stats-common-dto</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-<!--    <packaging>pom</packaging>-->
+    <!--    <packaging>pom</packaging>-->
 
     <name>Explore With Me Statistics Common Dto Library</name>
     <description>Common Dto Library for Statistics Module for Explore With Me</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
 
 </project>
