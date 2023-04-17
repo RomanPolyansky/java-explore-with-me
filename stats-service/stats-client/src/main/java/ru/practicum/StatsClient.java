@@ -1,7 +1,7 @@
 package ru.practicum;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import ru.practicum.request.entity.Request;
+import ru.practicum.request.RequestDto;
 
 import java.io.IOException;
 import java.net.URI;
@@ -30,11 +30,11 @@ public class StatsClient {
     }
 
     public HttpResponse<String> addRequest(String uri, String ip) throws IOException, InterruptedException {
-        Request body = Request.builder()
+        RequestDto body = RequestDto.builder()
                 .app(app)
                 .uri(uri)
                 .ip(ip)
-                .timestamp(LocalDateTime.now())
+                .timestamp(LocalDateTime.now().toString())
                 .build();
 
         HttpRequest request = HttpRequest.newBuilder()
