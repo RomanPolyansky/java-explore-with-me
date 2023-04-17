@@ -3,19 +3,18 @@ package ru.practicum.request;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.request.entity.Request;
 import ru.practicum.request.entity.QRequest;
 
-import java.net.URLEncoder;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RequestServiceImpl implements RequestService {
 
     private final RequestRepository requestRepository;
@@ -25,25 +24,19 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public Request saveRequest(Request request) {
         request.setTimestamp(LocalDateTime.now());
-        return requestRepository.save(request);
+        Request savedRequest = requestRepository.save(request);
+        log.info("RequestService SAVED: {} to the Request Repository", savedRequest);
+        return savedRequest;
     }
 
     @Override
-    public List<RequestStatDto> getRequests(String start, String end, List<String> uris, String unique) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-//        String startEncoded = URLEncoder.encode(start);
-//        String endEncoded = URLEncoder.encode(start);
-
-        LocalDateTime startTime = LocalDateTime.parse(start, formatter);
-        LocalDateTime endTime = LocalDateTime.parse(end, formatter);
-
-        BooleanExpression inTime = QRequest.request.timestamp.between(startTime, endTime)
-                .or(QRequest.request.timestamp.eq(startTime))
-                .or(QRequest.request.timestamp.eq(endTime));
+    public List<RequestStatDto> getRequests(LocalDateTime start, LocalDateTime end, List<String> uris, String unique) {
+        BooleanExpression inTime = QRequest.request.timestamp.between(start, end)
+                .or(QRequest.request.timestamp.eq(start))
+                .or(QRequest.request.timestamp.eq(end));
 
         BooleanExpression inUris;
-
-        if (uris != null && !uris.isEmpty()) {
+        if (!uris.isEmpty()) {
             inUris = QRequest.request.uri.in(uris);
         } else {
             inUris = Expressions.asBoolean(true).isTrue();
@@ -73,6 +66,8 @@ public class RequestServiceImpl implements RequestService {
             requestStatDto.setHit(requestsPerParamMap.get(requestStatDto));
             requestStatDtoList.add(requestStatDto);
         }
+
+        log.info("RequestService GET: {} from the Request Repository. From {}. To {}", requestStatDtoList, start, end);
         return requestStatDtoList;
     }
 }

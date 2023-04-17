@@ -4,9 +4,11 @@ package ru.practicum.request;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.request.entity.Request;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -30,8 +32,8 @@ public class RequestController {
 
     @GetMapping("/stats")
     public List<RequestStatDto> getRequestHistory(
-            @RequestParam(value = "start") String start,
-            @RequestParam(value = "end") String end,
+            @RequestParam(value = "start") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
+            @RequestParam(value = "end") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
             @RequestParam(value = "uris",  defaultValue = "") List<String> uris,
             @RequestParam(value = "unique", defaultValue = "false") String unique) {
         log.info("GET: /stats with start: {}; end: {}; uris: {}; unique: {}", start, end, uris, unique);
@@ -39,26 +41,10 @@ public class RequestController {
     }
 
     private RequestDto convertToDto(Request request) {
-        RequestDto postDto = modelMapper.map(request, RequestDto.class);
-
-//        postDto.setSubmissionDate(post.getSubmissionDate(),
-//                userService.getCurrentUser().getPreference().getTimezone());
-
-        return postDto;
+        return modelMapper.map(request, RequestDto.class);
     }
 
     private Request convertToEntity(RequestDto requestDto) {
-        Request post = modelMapper.map(requestDto, Request.class);
-
-//        post.setSubmissionDate(requestDto.getSubmissionDateConverted(
-//                userService.getCurrentUser().getPreference().getTimezone()));
-//
-//        if (requestDto.getId() != null) {
-//            Post oldPost = postService.getPostById(requestDto.getId());
-//            post.setRedditID(oldPost.getRedditID());
-//            post.setSent(oldPost.isSent());
-//        }
-
-        return post;
+        return modelMapper.map(requestDto, Request.class);
     }
 }
