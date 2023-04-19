@@ -9,7 +9,7 @@ public class RequestStatDto implements Comparable<RequestStatDto> {
 
     String app;
     String uri;
-    Integer hit;
+    Integer hits;
 
     public RequestStatDto(String app, String uri) {
         this.app = app;
@@ -31,6 +31,6 @@ public class RequestStatDto implements Comparable<RequestStatDto> {
 
     @Override
     public int compareTo(RequestStatDto o) {
-        return Integer.compare(o.hit, hit);
+        return Integer.compare(o.hits, hits);
     }
 }

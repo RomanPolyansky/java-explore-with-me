@@ -63,7 +63,7 @@ public class RequestServiceImpl implements RequestService {
 
         List<RequestStatDto> requestStatDtoList = new ArrayList<>();
         for (RequestStatDto requestStatDto : requestsPerParamMap.keySet()) {
-            requestStatDto.setHit(requestsPerParamMap.get(requestStatDto));
+            requestStatDto.setHits(requestsPerParamMap.get(requestStatDto));
             requestStatDtoList.add(requestStatDto);
         }
 
