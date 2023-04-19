@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.Objects;
 
 @Data
-public class RequestStatDto {
+public class RequestStatDto implements Comparable<RequestStatDto> {
 
     String app;
     String uri;
@@ -27,5 +27,10 @@ public class RequestStatDto {
     @Override
     public int hashCode() {
         return Objects.hash(app, uri);
+    }
+
+    @Override
+    public int compareTo(RequestStatDto o) {
+        return Integer.compare(o.hit, hit);
     }
 }

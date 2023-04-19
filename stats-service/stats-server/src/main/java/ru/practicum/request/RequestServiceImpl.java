@@ -68,6 +68,7 @@ public class RequestServiceImpl implements RequestService {
         }
 
         log.info("RequestService GET: {} from the Request Repository. From {}. To {}", requestStatDtoList, start, end);
+        Collections.sort(requestStatDtoList);
         return requestStatDtoList;
     }
 }
