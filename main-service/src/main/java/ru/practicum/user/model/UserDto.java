@@ -1,7 +1,7 @@
 package ru.practicum.user.model;
 
 import lombok.Data;
-import ru.practicum.user.constraint.Create;
+import ru.practicum.constraint.Create;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -14,5 +14,5 @@ public class UserDto {
     private String email;
     @NotBlank(groups = {Create.class}, message = "'name' should not be blank")
     private String name;
-    private Integer id;
+    private Long id;
 }

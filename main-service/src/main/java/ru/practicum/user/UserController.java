@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.user.constraint.Create;
+import ru.practicum.constraint.Create;
 import ru.practicum.user.model.User;
 import ru.practicum.user.model.UserDto;
 import ru.practicum.user.model.UserMapper;
@@ -24,6 +24,7 @@ public class UserController {
 
     private final UserService userService;
 
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/admin/users")
     public List<UserDto> getUsersByIds(@RequestParam (value = "ids", defaultValue = "") List<Integer> ids,
                                       @PositiveOrZero @RequestParam (value = "from", defaultValue = "0") int from,
