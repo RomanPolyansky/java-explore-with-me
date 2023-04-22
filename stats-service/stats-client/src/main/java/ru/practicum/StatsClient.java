@@ -51,8 +51,6 @@ public class StatsClient {
     public HttpResponse<String> getStatistics(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) throws IOException, InterruptedException {
         StringBuilder pathBuilder = new StringBuilder(serverUrl + "/stats");
 
-
-
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         pathBuilder.append("?start=").append(URLEncoder.encode(start.format(formatter)));
         pathBuilder.append("&end=").append(URLEncoder.encode(end.format(formatter)));

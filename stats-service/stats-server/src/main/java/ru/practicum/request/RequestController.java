@@ -18,22 +18,17 @@ public class RequestController {
 
     private final RequestService requestService;
 
-//    private final ModelMapper modelMapper;
-
-    private final RequestMapper requestMapper;
-
     @Autowired
     public RequestController(RequestService requestService) {
         this.requestService = requestService;
-        this.requestMapper = new RequestMapper(new ModelMapper());
     }
 
     @PostMapping("/hit")
     public RequestDto saveRequest(@RequestBody RequestDto requestDto) {
         log.info("POST: /hit with body: {}", requestDto);
-        Request request = requestMapper.convertToEntity(requestDto);
+        Request request = RequestMapper.convertToEntity(requestDto);
         Request requestSaved = requestService.saveRequest(request);
-        return requestMapper.convertToDto(requestSaved);
+        return RequestMapper.convertToDto(requestSaved);
     }
 
     @GetMapping("/stats")
