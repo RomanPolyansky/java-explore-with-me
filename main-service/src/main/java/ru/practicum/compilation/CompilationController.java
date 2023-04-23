@@ -34,7 +34,7 @@ public class CompilationController {
     }
 
     
-    @PatchMapping("/admin/compilations/{catId}")
+    @PatchMapping("/admin/compilations/{catId}") //TODO remake so Only set fields get replaced
     public CompilationDto addCompilation(@RequestBody @Validated(Update.class) CompilationDto compilationDto,
                                    @PathVariable(value = "catId") long catId) {
         Compilation compilation = CompilationMapper.convertToEntity(compilationDto);

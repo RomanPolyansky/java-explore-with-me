@@ -10,7 +10,7 @@ import javax.persistence.EntityManager;
 
 
 @Configuration
-public class ServerConfiguration {
+public class SetupConfiguration {
     @Bean
     public ModelMapper modelMapper() {
         return new ModelMapper();
