@@ -36,7 +36,7 @@ public class CategoryServiceImpl implements CategoryService {
                 .offset(from)
                 .limit(size)
                 .fetch());
-        log.info("UserRepository returned: {}", foundCategories);
+        log.info("CategoryRepository returned: {}", foundCategories);
         return foundCategories;
     }
 
