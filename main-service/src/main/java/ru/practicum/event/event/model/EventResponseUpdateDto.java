@@ -1,8 +1,7 @@
-package ru.practicum.event.model;
+package ru.practicum.event.event.model;
 
 import lombok.Data;
 import ru.practicum.location.model.Location;
-import ru.practicum.user.model.User;
 
 import java.time.LocalDateTime;
 
@@ -16,11 +15,6 @@ public class EventResponseUpdateDto {
     private LocalDateTime eventDate;
     private Location location;
     private Boolean paid;
-    private Long confirmedRequests;
-    private LocalDateTime createdOn;
-    private User initiator;
-    private LocalDateTime publishedOn;
     private StateAction stateAction;
-    private Long views;
     private Long category;
 }

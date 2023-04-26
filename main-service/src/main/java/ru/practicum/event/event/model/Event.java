@@ -1,4 +1,4 @@
-package ru.practicum.event.model;
+package ru.practicum.event.event.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -53,6 +53,14 @@ public class Event {
     private LocalDateTime statusDateTime;
     @Transient
     private StateAction stateAction;
+    @Transient
+    private Long confirmedRequests;
+    @Transient
+    private long views;
+
+    public Event(long eventId) {
+        this.id = eventId;
+    }
 
     @PostLoad
     private void setState(){
@@ -77,6 +85,7 @@ public class Event {
         if(other.statusStr != null) statusStr = other.statusStr;
         if(other.statusDateTime != null) statusDateTime = other.statusDateTime;
         if(other.stateAction != null) stateAction = other.stateAction;
+        if (stateAction != null) statusStr = stateAction.name();
         return this;
     }
 }

@@ -1,9 +1,9 @@
-package ru.practicum.event.model.mapping;
+package ru.practicum.event.event.model.mapping;
 
 import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
-import ru.practicum.event.model.Event;
-import ru.practicum.event.model.EventResponseNewDto;
+import ru.practicum.event.event.model.Event;
+import ru.practicum.event.event.model.EventResponseNewDto;
 
 public class EventNewDtoConverter implements Converter<Event, EventResponseNewDto> {
     @Override

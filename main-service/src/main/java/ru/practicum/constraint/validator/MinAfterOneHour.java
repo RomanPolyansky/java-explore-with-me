@@ -1,6 +1,4 @@
-package ru.practicum.constraint;
-
-import ru.practicum.constraint.validator.EventMinTimeValidator;
+package ru.practicum.constraint.validator;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
@@ -10,11 +8,12 @@ import java.lang.annotation.Target;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 @Target({ FIELD })
 @Retention(RUNTIME)
-@Constraint(validatedBy = EventMinTimeValidator.class)
+@Constraint(validatedBy = EventMinTimeValidatorForUpdate.class)
 @Documented
-public @interface MinAfterTwoHours {
+public @interface MinAfterOneHour {
 
     String message() default "{EventMinTimeValidator.invalid}";
 

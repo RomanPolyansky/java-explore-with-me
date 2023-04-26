@@ -1,4 +1,4 @@
-package ru.practicum.event.model;
+package ru.practicum.event.event.model;
 
 import lombok.Data;
 import ru.practicum.location.model.Location;
@@ -16,5 +16,4 @@ public class EventResponseNewDto {
     private Location location;
     private Boolean paid;
     private Long category;
-    private String stateAction;
 }

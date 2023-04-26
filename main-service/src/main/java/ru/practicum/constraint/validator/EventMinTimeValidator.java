@@ -1,7 +1,5 @@
 package ru.practicum.constraint.validator;
 
-import ru.practicum.constraint.MinAfterTwoHours;
-
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import java.time.LocalDateTime;

@@ -25,6 +25,10 @@ public class User {
     public User() {
     }
 
+    public User(long userId) {
+        this.id = userId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

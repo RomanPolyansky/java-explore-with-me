@@ -18,6 +18,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final JPAQueryFactory jpaQueryFactory;
 
+
     @Override
     public List<User> getUsersByIds(List<Integer> ids, int from, int size) {
         List<User> foundUsers;

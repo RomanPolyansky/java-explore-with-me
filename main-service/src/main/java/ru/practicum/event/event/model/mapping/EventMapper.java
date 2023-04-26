@@ -1,8 +1,8 @@
-package ru.practicum.event.model.mapping;
+package ru.practicum.event.event.model.mapping;
 
 import org.modelmapper.ModelMapper;
 import ru.practicum.category.model.Category;
-import ru.practicum.event.model.*;
+import ru.practicum.event.event.model.*;
 
 public class EventMapper {
     private static final ModelMapper modelMapper = new ModelMapper();
@@ -18,10 +18,6 @@ public class EventMapper {
         return event;
     }
 
-    public static EventRequestDto convertToDto(Event event) {
-        return modelMapper.map(event, EventRequestDto.class);
-    }
-
     public static EventResponseNewDto convertToNewDto(Event event) {
         return modelMapper.map(event, EventResponseNewDto.class);
     }
@@ -32,5 +28,9 @@ public class EventMapper {
 
     public static EventResponseUpdateDto convertToUpdateDto(Event event) {
         return modelMapper.map(event, EventResponseUpdateDto.class);
+    }
+
+    public static EventResponseShortDto convertToShortDto(Event event) {
+        return modelMapper.map(event, EventResponseShortDto.class);
     }
 }
