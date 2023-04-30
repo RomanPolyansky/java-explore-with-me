@@ -14,6 +14,8 @@ import ru.practicum.constraint.UpdateUser;
 import ru.practicum.constraint.validator.SortMethod;
 import ru.practicum.event.event.model.*;
 import ru.practicum.constraint.Create;
+import ru.practicum.event.event.model.constants.EventState;
+import ru.practicum.event.event.model.constants.SortField;
 import ru.practicum.event.event.model.mapping.EventMapper;
 import ru.practicum.request.RequestStatDto;
 
@@ -49,7 +51,7 @@ public class EventController {
             @PathVariable("userId") long userId,
             @RequestBody @Validated(Create.class) EventRequestDto eventDto) {
         Event event = EventMapper.convertToEntity(eventDto);
-        event.setStateAction(StateAction.PENDING_EVENT);
+        event.setState(EventState.PENDING);
         log.info("POST /users/{}/events of: {}", userId, event);
         return EventMapper.convertToNewDto(eventService.addEvent(event, userId));
     }
@@ -75,11 +77,11 @@ public class EventController {
     }
 
     @PatchMapping("/admin/events/{eventId}")
-    public EventResponseUpdateDto changeEvent(@RequestBody @Validated(Update.class) EventRequestDto eventDto,
+    public EventResponseFullDto changeEvent(@RequestBody @Validated(Update.class) EventRequestDto eventDto,
                                             @PathVariable(value = "eventId") long eventId) {
         Event event = EventMapper.convertToEntity(eventDto);
         log.info("PATCH /admin/events of: {}; to {}", eventId, event);
-        return EventMapper.convertToUpdateDto(eventService.changeEvent(eventId, event));
+        return EventMapper.convertToFullDto(eventService.changeEvent(eventId, event));
     }
 
     @ResponseStatus(HttpStatus.OK)

@@ -1,6 +1,6 @@
 package ru.practicum.constraint.validator;
 
-import ru.practicum.event.event.model.ParticipationStatus;
+import ru.practicum.event.event.model.constants.ParticipationStatus;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;

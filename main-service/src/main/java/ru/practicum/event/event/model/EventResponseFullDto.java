@@ -2,6 +2,7 @@ package ru.practicum.event.event.model;
 
 import lombok.Data;
 import ru.practicum.category.model.Category;
+import ru.practicum.event.event.model.constants.EventState;
 import ru.practicum.location.model.Location;
 import ru.practicum.user.model.User;
 
@@ -23,6 +24,6 @@ public class EventResponseFullDto {
     private LocalDateTime createdOn;
     private User initiator;
     private LocalDateTime publishedOn;
-    private StateAction state;
+    private EventState state;
     private long views;
 }

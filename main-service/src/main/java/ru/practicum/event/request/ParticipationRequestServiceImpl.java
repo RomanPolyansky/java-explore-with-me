@@ -7,7 +7,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import ru.practicum.event.event.EventService;
 import ru.practicum.event.event.model.Event;
-import ru.practicum.event.event.model.ParticipationStatus;
+import ru.practicum.event.event.model.constants.ParticipationStatus;
 import ru.practicum.event.request.model.EventRequestStatusUpdateRequest;
 import ru.practicum.event.request.model.ParticipationRequest;
 import ru.practicum.event.request.model.QParticipationRequest;
@@ -34,7 +34,6 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
         Optional<ParticipationRequest> participationRequestInRepo = Optional.ofNullable(getAnyRequestByIds(userId, eventId));
         if (participationRequestInRepo.isPresent())
             throw new DataIntegrityViolationException("Cannot send the repeated participation request");
-
         User requester = userService.getUserById(userId);
         ParticipationRequest newEventRequest = new ParticipationRequest(userId, eventId);
         Event event = eventService.getPublishedEventById(eventId);

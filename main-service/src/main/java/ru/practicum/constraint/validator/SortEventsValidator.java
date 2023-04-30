@@ -1,6 +1,6 @@
 package ru.practicum.constraint.validator;
 
-import ru.practicum.event.event.model.SortField;
+import ru.practicum.event.event.model.constants.SortField;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;

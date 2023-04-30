@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.practicum.category.model.Category;
 import ru.practicum.compilation.model.Compilation;
+import ru.practicum.event.event.model.constants.EventState;
+import ru.practicum.event.event.model.constants.ParticipationStatus;
 import ru.practicum.event.request.model.ParticipationRequest;
 import ru.practicum.location.model.Location;
 import ru.practicum.user.model.User;
@@ -62,11 +64,13 @@ public class Event implements Comparable<Event> {
     @OneToMany(mappedBy = "event")
     private List<ParticipationRequest> participationRequests;
     @Transient
-    private StateAction stateAction;
+    private EventState state;
     @Transient
     private Long confirmedRequests;
     @Transient
     private long views;
+    @Transient
+    private String stateAction;
 
     public Event(long eventId) {
         this.id = eventId;
@@ -74,7 +78,7 @@ public class Event implements Comparable<Event> {
 
     @PostLoad
     private void setState() {
-        stateAction = StateAction.valueOf(statusStr);
+        state = EventState.valueOf(statusStr);
     }
 
     public Event countConfirmedRequests() {
@@ -102,8 +106,8 @@ public class Event implements Comparable<Event> {
         if (other.initiator != null) initiator = other.initiator;
         if (other.statusStr != null) statusStr = other.statusStr;
         if (other.publishedOn != null) publishedOn = other.publishedOn;
-        if (other.stateAction != null) stateAction = other.stateAction;
-        stateAction = StateAction.valueOf(statusStr);
+        if (other.state != null) state = other.state;
+        state = EventState.valueOf(statusStr);
         return this;
     }
 
@@ -129,7 +133,7 @@ public class Event implements Comparable<Event> {
                 "initiator = " + initiator + ", " +
                 "statusStr = " + statusStr + ", " +
                 "publishedOn = " + publishedOn + ", " +
-                "stateAction = " + stateAction + ", " +
+                "stateAction = " + state + ", " +
                 "confirmedRequests = " + confirmedRequests + ", " +
                 "views = " + views + ")";
     }

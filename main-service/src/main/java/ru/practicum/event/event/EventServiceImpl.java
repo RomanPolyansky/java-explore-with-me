@@ -9,8 +9,9 @@ import org.apache.commons.collections4.IterableUtils;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import ru.practicum.event.event.model.Event;
+import ru.practicum.event.event.model.constants.EventState;
 import ru.practicum.event.event.model.QEvent;
-import ru.practicum.event.event.model.StateAction;
+import ru.practicum.event.event.model.constants.StateAction;
 import ru.practicum.exception.ObjectNotFoundException;
 import ru.practicum.location.LocationService;
 import ru.practicum.location.model.Location;
@@ -38,7 +39,7 @@ public class EventServiceImpl implements EventService {
         Location savedLocation = locationService.addLocation(event.getLocation());
         event.setLocation(savedLocation);
         event.setCreatedOn(LocalDateTime.now());
-        event.setStatusStr(StateAction.PENDING_EVENT.name());
+        event.setStatusStr(EventState.PENDING.name());
         Event savedEvent = eventRepository.save(event);
         log.info("EventRepository saved: {}", savedEvent);
         return savedEvent;
@@ -71,10 +72,11 @@ public class EventServiceImpl implements EventService {
     @Override
     public Event changeEvent(long eventId, Event eventChangeTo) {
         Event eventInRepo = getAnyEventById(eventId);
-        if (!eventInRepo.getStateAction().equals(StateAction.PENDING_EVENT)) {
+        if (!eventInRepo.getState().equals(EventState.PENDING)) {
             throw new DataIntegrityViolationException(String.format("Event %s cannot be modified", eventId));
         }
         eventChangeTo.setPublishedOn(LocalDateTime.now());
+        setStatus(eventChangeTo);
         Event mergedEvent = eventInRepo.merge(eventChangeTo);
         log.info("EventRepository had: {}; changing to: {}", eventInRepo, eventChangeTo);
         eventRepository.save(mergedEvent);
@@ -83,7 +85,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Event getPublishedEventById(long eventId) {
-        Event event = eventRepository.findByIdAndStatusStr(eventId, StateAction.PUBLISH_EVENT.name())
+        Event event = eventRepository.findByIdAndStatusStr(eventId, EventState.PUBLISHED.name())
                 .orElseThrow(() -> new ObjectNotFoundException(String.format("Event with id=%s was not found", eventId))
                 );
         event.countConfirmedRequests();
@@ -127,14 +129,12 @@ public class EventServiceImpl implements EventService {
     public Event changeEventByUser(long userId, long eventId, Event eventChangeTo) {
         userService.getUserById(userId);// throws exception if not found
         Event eventInRepo = getAnyEventById(eventId);
-        boolean allowedToBeChanged = eventInRepo.getStateAction().equals(StateAction.PENDING_EVENT) ||
-                eventInRepo.getStateAction().equals(StateAction.CANCEL_REVIEW);
+        boolean allowedToBeChanged = eventInRepo.getState().equals(EventState.PENDING) ||
+                eventInRepo.getState().equals(EventState.CANCELED);
         if (!allowedToBeChanged) {
             throw new DataIntegrityViolationException(String.format("Event id=%s cannot be modified", eventId));
         }
-        if (eventChangeTo.getStateAction().equals(StateAction.SEND_TO_REVIEW)) {
-            eventChangeTo.setStatusStr(StateAction.PENDING_EVENT.name());
-        }
+        setStatus(eventChangeTo);
         Event mergedEvent = eventInRepo.merge(eventChangeTo);
         log.info("EventRepository had: {}; changing to: {}", eventInRepo, eventChangeTo);
         eventRepository.save(mergedEvent);
@@ -149,6 +149,24 @@ public class EventServiceImpl implements EventService {
             return event.countConfirmedRequests();
         } else {
             throw new ObjectNotFoundException(String.format("User with id=%s is not an initiator of Event with id=%s", userId, eventId));
+        }
+    }
+
+    private void setStatus(Event event) {
+        switch (StateAction.valueOf(event.getStateAction())) {
+            case PUBLISH_EVENT:
+                event.setState(EventState.PUBLISHED);
+                event.setStatusStr(EventState.PUBLISHED.name());
+                break;
+            case CANCEL_REVIEW:
+            case REJECT_EVENT:
+                event.setState(EventState.CANCELED);
+                event.setStatusStr(EventState.CANCELED.name());
+                break;
+            case SEND_TO_REVIEW:
+                event.setState(EventState.PENDING);
+                event.setStatusStr(EventState.PENDING.name());
+                break;
         }
     }
 

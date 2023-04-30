@@ -18,7 +18,7 @@ public class EventUpdateDtoConverter implements Converter<Event, EventResponseUp
         destination.setParticipantLimit(source.getParticipantLimit());
         destination.setRequestModeration(source.getRequestModeration());
         destination.setPaid(source.getPaid());
-        destination.setStateAction(source.getStateAction());
+        destination.setState(source.getState());
         destination.setTitle(source.getTitle());
         return destination;
     }
