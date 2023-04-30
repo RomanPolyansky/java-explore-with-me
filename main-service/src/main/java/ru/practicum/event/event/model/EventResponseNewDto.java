@@ -10,7 +10,7 @@ public class EventResponseNewDto {
     private String title;
     private String annotation;
     private String description;
-    private Integer participantLimit;
+    private Long participantLimit;
     private Boolean requestModeration = true;
     private LocalDateTime eventDate;
     private Location location;

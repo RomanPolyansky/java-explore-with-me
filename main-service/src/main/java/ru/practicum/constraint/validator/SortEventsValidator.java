@@ -8,7 +8,7 @@ import javax.validation.ConstraintValidatorContext;
 public class SortEventsValidator implements ConstraintValidator<SortMethod, String> {
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
-        SortField.valueOf(value);
+        SortField.valueOf(value.toUpperCase());
         return true;
     }
 }

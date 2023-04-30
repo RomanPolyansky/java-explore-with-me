@@ -48,17 +48,17 @@ public class RequestServiceImpl implements RequestService {
                 .orderBy(QRequest.request.app.desc())
                 .fetch();
 
-        Map<RequestStatDto, Integer> requestsPerParamMap = new HashMap<>();
+        Map<RequestStatDto, Long> requestsPerParamMap = new HashMap<>();
         Set<String> distinctIps = new HashSet<>();
         for (Request request : requestList) {
             RequestStatDto requestStatDto = new RequestStatDto(request.getApp(),request.getUri());
-            int val = requestsPerParamMap.getOrDefault(requestStatDto, 0);
+            long val = requestsPerParamMap.getOrDefault(requestStatDto, 0L);
             if (unique.equalsIgnoreCase("true") && distinctIps.contains(request.getIp())) { // count distinct
                 continue;
             } else {
                 distinctIps.add(request.getIp());
             }
-            requestsPerParamMap.put(requestStatDto, val + 1);
+            requestsPerParamMap.put(requestStatDto, val + 1L);
         }
 
         List<RequestStatDto> requestStatDtoList = new ArrayList<>();

@@ -3,7 +3,6 @@ package ru.practicum.event.request.model;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 import ru.practicum.event.event.model.Event;
 import ru.practicum.user.model.User;
 
@@ -15,7 +14,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Getter
 @Setter
-@ToString
 public class ParticipationRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -5,7 +5,7 @@ import ru.practicum.request.entity.Request;
 
 public class RequestMapper {
 
-    private static ModelMapper modelMapper;
+    private static ModelMapper modelMapper = new ModelMapper();
 
     public RequestMapper(ModelMapper modelMapper) {
         RequestMapper.modelMapper = modelMapper;

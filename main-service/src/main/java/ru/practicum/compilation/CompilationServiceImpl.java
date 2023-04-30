@@ -1,15 +1,19 @@
 package ru.practicum.compilation;
 
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.IterableUtils;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import ru.practicum.compilation.model.Compilation;
 import ru.practicum.compilation.model.QCompilation;
 import ru.practicum.exception.ObjectNotFoundException;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -18,11 +22,16 @@ import java.util.List;
 public class CompilationServiceImpl implements CompilationService {
 
     private final CompilationRepository compilationRepository;
-
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
     public Compilation addCompilation(Compilation compilation) {
+        Optional<Compilation> compilationOfTitle = compilationRepository.findByTitle(compilation.getTitle());
+        if (compilationOfTitle.isPresent()) {
+            throw new DataIntegrityViolationException(String.format("Compilation of title %s already exists", compilation.getTitle()));
+        }
+        Compilation newCompilation = compilationRepository.save(new Compilation(compilation.getTitle(), compilation.getPinned()));
+        compilation.setId(newCompilation.getId());
         Compilation savedCompilation = compilationRepository.save(compilation);
         log.info("CompilationRepository saved: {}", savedCompilation);
         return savedCompilation;
@@ -30,8 +39,12 @@ public class CompilationServiceImpl implements CompilationService {
 
 
     @Override
-    public List<Compilation> getCategories(int from, int size) {
+    public List<Compilation> getCategories(Boolean pinned, int from, int size) {
+        BooleanExpression inPinned = pinned == null ? Expressions.asBoolean(true).isTrue() :
+                QCompilation.compilation.pinned.eq(pinned);
+
         List<Compilation> foundCategories = IterableUtils.toList(jpaQueryFactory.selectFrom(QCompilation.compilation)
+                .where(inPinned)
                 .orderBy(QCompilation.compilation.id.asc())
                 .offset(from)
                 .limit(size)
@@ -53,7 +66,7 @@ public class CompilationServiceImpl implements CompilationService {
                 () -> new ObjectNotFoundException(String.format("Compilation with id %s does not exist", comId))
         );
         compilation.setId(comId);
-        Compilation changedCompilation = compilationRepository.save(compilation);
+        Compilation changedCompilation = compilationRepository.save(compilationInRepo.merge(compilation));
         log.info("CompilationRepository changed: {}; to {}", compilationInRepo, changedCompilation);
         return changedCompilation;
     }

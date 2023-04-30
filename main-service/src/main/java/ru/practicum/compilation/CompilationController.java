@@ -7,7 +7,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.compilation.model.Compilation;
 import ru.practicum.compilation.model.CompilationDto;
-import ru.practicum.compilation.model.CompilationMapper;
+import ru.practicum.compilation.model.mapper.CompilationMapper;
+import ru.practicum.compilation.model.CompilationResponseDto;
 import ru.practicum.constraint.Create;
 import ru.practicum.constraint.Update;
 
@@ -27,42 +28,43 @@ public class CompilationController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/admin/compilations")
-    public CompilationDto addCompilation(@RequestBody @Validated(Create.class) CompilationDto compilationDto) {
+    public CompilationResponseDto addCompilation(@RequestBody @Validated(Create.class) CompilationDto compilationDto) {
         Compilation compilation = CompilationMapper.convertToEntity(compilationDto);
         log.info("POST /admin/compilations of: {}", compilation);
         return CompilationMapper.convertToDto(compilationService.addCompilation(compilation));
     }
 
     
-    @PatchMapping("/admin/compilations/{catId}") //TODO remake so Only set fields get replaced
-    public CompilationDto addCompilation(@RequestBody @Validated(Update.class) CompilationDto compilationDto,
-                                   @PathVariable(value = "catId") long catId) {
+    @PatchMapping("/admin/compilations/{comId}")
+    public CompilationResponseDto addCompilation(@RequestBody @Validated(Update.class) CompilationDto compilationDto,
+                                   @PathVariable(value = "comId") long comId) {
         Compilation compilation = CompilationMapper.convertToEntity(compilationDto);
-        log.info("PATCH /admin/compilations of: {}; to {}", catId, compilation);
-        return CompilationMapper.convertToDto(compilationService.changeCompilation(catId, compilation));
+        log.info("PATCH /admin/compilations of: {}; to {}", comId, compilation);
+        return CompilationMapper.convertToDto(compilationService.changeCompilation(comId, compilation));
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @DeleteMapping("/admin/compilations/{catId}")
-    public void deleteCompilation(@PathVariable(value = "catId") long catId) {
-        log.info("DELETE of: {}", catId);
-        compilationService.deleteCompilation(catId);
+    @DeleteMapping("/admin/compilations/{comId}")
+    public void deleteCompilation(@PathVariable(value = "comId") long comId) {
+        log.info("DELETE of: {}", comId);
+        compilationService.deleteCompilation(comId);
     }
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/compilations")
-    public List<CompilationDto> getCategories(@PositiveOrZero @RequestParam (value = "from", defaultValue = "0") int from,
+    public List<CompilationResponseDto> getCompilations(@RequestParam (value = "pinned", required = false) Boolean pinned,
+            @PositiveOrZero @RequestParam (value = "from", defaultValue = "0") int from,
                                            @Positive @RequestParam (value = "size", defaultValue = "10") int size) {
-        log.info("GET /admin/compilations from: {}; size: {}", from, size);
-        List<Compilation> compilationsList = compilationService.getCategories(from, size);
+        log.info("GET /admin/compilations pinned:{}; from: {}; size: {}", pinned, from, size);
+        List<Compilation> compilationsList = compilationService.getCategories(pinned, from, size);
         return compilationsList.stream()
                 .map(CompilationMapper::convertToDto)
                 .collect(Collectors.toList());
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/compilations/{catId}")
-    public CompilationDto getCompilation(@PathVariable (value = "catId") Long id) {
+    @GetMapping("/compilations/{comId}")
+    public CompilationResponseDto getCompilation(@PathVariable (value = "comId") Long id) {
         log.info("GET /compilations id: {}", id);
         return CompilationMapper.convertToDto(compilationService.getCompilationById(id));
     }

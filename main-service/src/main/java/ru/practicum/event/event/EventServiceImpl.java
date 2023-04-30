@@ -18,6 +18,7 @@ import ru.practicum.user.UserService;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -60,8 +61,11 @@ public class EventServiceImpl implements EventService {
                 .offset(from)
                 .limit(size)
                 .fetch());
-        log.info("EventRepository returns: {}", foundEvents);
-        return foundEvents;
+        List<Event> eventsWithConfirmedRequests = foundEvents.stream()
+                .peek(Event::countConfirmedRequests)
+                .collect(Collectors.toList());
+        log.info("EventRepository returns: {}", eventsWithConfirmedRequests);
+        return eventsWithConfirmedRequests;
     }
 
     @Override
@@ -70,6 +74,7 @@ public class EventServiceImpl implements EventService {
         if (!eventInRepo.getStateAction().equals(StateAction.PENDING_EVENT)) {
             throw new DataIntegrityViolationException(String.format("Event %s cannot be modified", eventId));
         }
+        eventChangeTo.setPublishedOn(LocalDateTime.now());
         Event mergedEvent = eventInRepo.merge(eventChangeTo);
         log.info("EventRepository had: {}; changing to: {}", eventInRepo, eventChangeTo);
         eventRepository.save(mergedEvent);
@@ -78,29 +83,33 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Event getPublishedEventById(long eventId) {
-        return eventRepository.findByIdAndStatusStr(eventId, StateAction.PUBLISH_EVENT.name())
+        Event event = eventRepository.findByIdAndStatusStr(eventId, StateAction.PUBLISH_EVENT.name())
                 .orElseThrow(() -> new ObjectNotFoundException(String.format("Event with id=%s was not found", eventId))
-        );
+                );
+        event.countConfirmedRequests();
+        return event;
     }
 
     @Override
     public List<Event> getEventsOfUser(long userId, int from, int size) {
         userService.getUserById(userId);// throws exception if not found
-        return IterableUtils.toList(jpaQueryFactory.selectFrom(QEvent.event)
+        List<Event> events = IterableUtils.toList(jpaQueryFactory.selectFrom(QEvent.event)
                 .where(QEvent.event.initiator.id.eq(userId))
                 .orderBy(QEvent.event.eventDate.asc())
                 .offset(from)
                 .limit(size)
                 .fetch());
+        return events.stream()
+                .peek(Event::countConfirmedRequests)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<Event> getEventsPublic(String text, int from, int size, List<Long> categories, Boolean isPaid,
                                  Boolean onlyAvailable, String sort, LocalDateTime rangeStart, LocalDateTime rangeEnd) {
         BooleanExpression inCategories = isInCategories(categories);
-        BooleanExpression hasText = hasText(text); // TODO WHERE CONFIRMED REQUEST < PARTICIPANT LIMIT
-
-        return IterableUtils.toList(jpaQueryFactory.selectFrom(QEvent.event)
+        BooleanExpression hasText = hasText(text);
+        List<Event> events = IterableUtils.toList(jpaQueryFactory.selectFrom(QEvent.event)
                 .where(inCategories)
                 .where(QEvent.event.paid.eq(isPaid))
                 .where(hasText)
@@ -108,17 +117,10 @@ public class EventServiceImpl implements EventService {
                 .offset(from)
                 .limit(size)
                 .fetch());
-    }
-
-    @Override
-    public Event getEventOfUser(long eventId, long userId) {
-        userService.getUserById(userId);// throws exception if not found
-        Event event = getAnyEventById(eventId);
-        if (event.getInitiator().getId() == userId) {
-            return event;
-        } else {
-            throw new ObjectNotFoundException(String.format("User with id=%s is not an initiator of Event with id=%s", userId, eventId));
-        }
+        return events.stream()
+                .peek(Event::countConfirmedRequests)
+                .filter(event -> event.getConfirmedRequests() <= event.getParticipantLimit())
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -136,15 +138,28 @@ public class EventServiceImpl implements EventService {
         return mergedEvent;
     }
 
+    @Override
+    public Event getEventOfUser(long eventId, long userId) {
+        userService.getUserById(userId);// throws exception if not found
+        Event event = getAnyEventById(eventId);
+        if (event.getInitiator().getId() == userId) {
+            return event.countConfirmedRequests();
+        } else {
+            throw new ObjectNotFoundException(String.format("User with id=%s is not an initiator of Event with id=%s", userId, eventId));
+        }
+    }
+
     private BooleanExpression hasText(String text) {
         return QEvent.event.annotation.containsIgnoreCase(text)
                 .or(QEvent.event.description.containsIgnoreCase(text));
     }
 
     private Event getAnyEventById(long eventId) {
-        return eventRepository.findById(eventId)
+        Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ObjectNotFoundException(String.format("Event with id=%s was not found", eventId))
                 );
+        event.countConfirmedRequests();
+        return event;
     }
 
     private BooleanExpression isInStates(List<String> states) {

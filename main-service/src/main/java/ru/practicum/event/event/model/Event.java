@@ -3,21 +3,23 @@ package ru.practicum.event.event.model;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 import ru.practicum.category.model.Category;
+import ru.practicum.compilation.model.Compilation;
+import ru.practicum.event.request.model.ParticipationRequest;
 import ru.practicum.location.model.Location;
 import ru.practicum.user.model.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "events")
 @AllArgsConstructor
 @Getter
 @Setter
-@ToString
-public class Event {
+public class Event implements Comparable<Event> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,7 +33,7 @@ public class Event {
     @Column(name = "paid")
     private Boolean paid;
     @Column(name = "participants_limit")
-    private Integer participantLimit;
+    private Long participantLimit;
     @Column(name = "request_moderation")
     private Boolean requestModeration;
     @Column(name = "event_date")
@@ -47,10 +49,18 @@ public class Event {
     @ManyToOne
     @JoinColumn(name="initiator_id", nullable=false)
     private User initiator;
+    @ManyToMany
+    @JoinTable(
+            name = "compilation_events",
+            inverseJoinColumns = @JoinColumn(name = "event_id"),
+            joinColumns = @JoinColumn(name = "compilation_id"))
+    private List<Compilation> compilation;
     @Column(name = "status")
     private String statusStr;
-    @Column(name = "status_datetime")
-    private LocalDateTime statusDateTime;
+    @Column(name = "published_on")
+    private LocalDateTime publishedOn;
+    @OneToMany(mappedBy="event")
+    private List<ParticipationRequest> participationRequests;
     @Transient
     private StateAction stateAction;
     @Transient
@@ -65,6 +75,14 @@ public class Event {
     @PostLoad
     private void setState(){
         stateAction = StateAction.valueOf(statusStr);
+    }
+
+    public Event countConfirmedRequests() {
+        List<ParticipationRequest> filteredPartRequests = participationRequests.stream()
+                .filter(req -> req.getStatus().equals(ParticipationStatus.CONFIRMED.toString()))
+                .collect(Collectors.toList());
+        confirmedRequests = (long) filteredPartRequests.size();
+        return this;
     }
 
     public Event() {
@@ -83,9 +101,14 @@ public class Event {
         if(other.category != null) category = other.category;
         if(other.initiator != null) initiator = other.initiator;
         if(other.statusStr != null) statusStr = other.statusStr;
-        if(other.statusDateTime != null) statusDateTime = other.statusDateTime;
+        if(other.publishedOn != null) publishedOn = other.publishedOn;
         if(other.stateAction != null) stateAction = other.stateAction;
         if (stateAction != null) statusStr = stateAction.name();
         return this;
+    }
+
+    @Override
+    public int compareTo(Event o) {
+        return (int) (this.views - o.views);
     }
 }

@@ -1,5 +1,6 @@
 package ru.practicum.event.request;
 
+import ru.practicum.event.request.model.EventRequestStatusUpdateRequest;
 import ru.practicum.event.request.model.ParticipationRequest;
 
 import java.util.List;
@@ -10,5 +11,9 @@ public interface ParticipationRequestService {
 
     ParticipationRequest cancelParticipation(long userId, long requestId);
 
-    List<ParticipationRequest> getParticipationRequests(long userId);
+    List<ParticipationRequest> getParticipationRequestsOfUser(long userId);
+
+    List<ParticipationRequest> getRequestsOfUsersEvent(long userId, long eventId);
+
+    List<ParticipationRequest> replyToParticipation(EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest, long userId, long eventId);
 }

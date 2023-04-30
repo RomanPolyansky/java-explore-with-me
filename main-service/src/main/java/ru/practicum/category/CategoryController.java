@@ -34,7 +34,7 @@ public class CategoryController {
     }
 
     
-    @PatchMapping("/admin/categories/{catId}") //TODO remake so Only set fields get replaced
+    @PatchMapping("/admin/categories/{catId}")
     public CategoryDto addCategory(@RequestBody @Validated(Update.class) CategoryDto categoryDto,
                                @PathVariable(value = "catId") long catId) {
         Category category = CategoryMapper.convertToEntity(categoryDto);

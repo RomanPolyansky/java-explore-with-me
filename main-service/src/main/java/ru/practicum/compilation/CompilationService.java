@@ -12,7 +12,7 @@ public interface CompilationService {
 
     Compilation addCompilation(Compilation compilation);
 
-    List<Compilation> getCategories(int from, int size);
+    List<Compilation> getCategories(Boolean pinned, int from, int size);
 
     Compilation getCompilationById(Long id);
 }

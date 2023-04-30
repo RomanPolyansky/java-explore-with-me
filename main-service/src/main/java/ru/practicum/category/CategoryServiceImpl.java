@@ -53,7 +53,7 @@ public class CategoryServiceImpl implements CategoryService {
                 () -> new ObjectNotFoundException(String.format("Category with id %s does not exist", catId))
         );
         category.setId(catId);
-        Category changedCategory = categoryRepository.save(category);
+        Category changedCategory = categoryRepository.save(categoryInRepo.merge(category));
         log.info("CategoryRepository changed: {}; to {}", categoryInRepo, changedCategory);
         return changedCategory;
     }
