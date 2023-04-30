@@ -10,8 +10,10 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import ru.practicum.compilation.model.Compilation;
 import ru.practicum.compilation.model.QCompilation;
+import ru.practicum.event.event.model.Event;
 import ru.practicum.exception.ObjectNotFoundException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,6 +35,11 @@ public class CompilationServiceImpl implements CompilationService {
         Compilation newCompilation = compilationRepository.save(new Compilation(compilation.getTitle(), compilation.getPinned()));
         compilation.setId(newCompilation.getId());
         Compilation savedCompilation = compilationRepository.save(compilation);
+        if (savedCompilation.getEvents().isEmpty()) {
+            List<Event> stupidList = new ArrayList<>();
+            stupidList.add(null);
+            savedCompilation.setEvents(stupidList);
+        }
         log.info("CompilationRepository saved: {}", savedCompilation);
         return savedCompilation;
     }
