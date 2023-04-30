@@ -47,13 +47,13 @@ public class EventController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/users/{userId}/events")
-    public EventResponseNewDto addEvent(
+    public EventResponseFullDto addEvent(
             @PathVariable("userId") long userId,
             @RequestBody @Validated(Create.class) EventRequestDto eventDto) {
         Event event = EventMapper.convertToEntity(eventDto);
         event.setState(EventState.PENDING);
         log.info("POST /users/{}/events of: {}", userId, event);
-        return EventMapper.convertToNewDto(eventService.addEvent(event, userId));
+        return EventMapper.convertToFullDto(eventService.addEvent(event, userId));
     }
 
     @ResponseStatus(HttpStatus.OK)
