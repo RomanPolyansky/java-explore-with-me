@@ -132,6 +132,9 @@ public class EventServiceImpl implements EventService {
         if (!allowedToBeChanged) {
             throw new DataIntegrityViolationException(String.format("Event id=%s cannot be modified", eventId));
         }
+        if (eventChangeTo.getStateAction().equals(StateAction.SEND_TO_REVIEW)) {
+            eventChangeTo.setStatusStr(StateAction.PENDING_EVENT.name());
+        }
         Event mergedEvent = eventInRepo.merge(eventChangeTo);
         log.info("EventRepository had: {}; changing to: {}", eventInRepo, eventChangeTo);
         eventRepository.save(mergedEvent);
