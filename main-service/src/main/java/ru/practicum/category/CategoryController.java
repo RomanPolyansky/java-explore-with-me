@@ -33,10 +33,9 @@ public class CategoryController {
         return CategoryMapper.convertToDto(categoryService.addCategory(category));
     }
 
-    
     @PatchMapping("/admin/categories/{catId}")
     public CategoryDto addCategory(@RequestBody @Validated(Update.class) CategoryDto categoryDto,
-                               @PathVariable(value = "catId") long catId) {
+                                   @PathVariable(value = "catId") long catId) {
         Category category = CategoryMapper.convertToEntity(categoryDto);
         log.info("PATCH /admin/categories of: {}; to {}", catId, category);
         return CategoryMapper.convertToDto(categoryService.changeCategory(catId, category));
@@ -51,8 +50,8 @@ public class CategoryController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/categories")
-    public List<CategoryDto> getCategories(@PositiveOrZero @RequestParam (value = "from", defaultValue = "0") int from,
-                                       @Positive @RequestParam (value = "size", defaultValue = "10") int size) {
+    public List<CategoryDto> getCategories(@PositiveOrZero @RequestParam(value = "from", defaultValue = "0") int from,
+                                           @Positive @RequestParam(value = "size", defaultValue = "10") int size) {
         log.info("GET /admin/categories from: {}; size: {}", from, size);
         List<Category> categorysList = categoryService.getCategories(from, size);
         return categorysList.stream()
@@ -62,7 +61,7 @@ public class CategoryController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/categories/{catId}")
-    public CategoryDto getCategory(@PathVariable (value = "catId") Long id) {
+    public CategoryDto getCategory(@PathVariable(value = "catId") Long id) {
         log.info("GET /categories id: {}", id);
         return CategoryMapper.convertToDto(categoryService.getCategoryById(id));
     }

@@ -19,10 +19,10 @@ public class ParticipationRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne
-    @JoinColumn(name="event_id", nullable=false)
+    @JoinColumn(name = "event_id", nullable = false)
     private Event event;
     @ManyToOne
-    @JoinColumn(name="requester_id", nullable=false)
+    @JoinColumn(name = "requester_id", nullable = false)
     private User requester;
     @Column(name = "status")
     private String status;

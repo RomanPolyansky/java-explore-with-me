@@ -34,10 +34,9 @@ public class CompilationController {
         return CompilationMapper.convertToDto(compilationService.addCompilation(compilation));
     }
 
-    
     @PatchMapping("/admin/compilations/{comId}")
     public CompilationResponseDto addCompilation(@RequestBody @Validated(Update.class) CompilationDto compilationDto,
-                                   @PathVariable(value = "comId") long comId) {
+                                                 @PathVariable(value = "comId") long comId) {
         Compilation compilation = CompilationMapper.convertToEntity(compilationDto);
         log.info("PATCH /admin/compilations of: {}; to {}", comId, compilation);
         return CompilationMapper.convertToDto(compilationService.changeCompilation(comId, compilation));
@@ -52,9 +51,9 @@ public class CompilationController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/compilations")
-    public List<CompilationResponseDto> getCompilations(@RequestParam (value = "pinned", required = false) Boolean pinned,
-            @PositiveOrZero @RequestParam (value = "from", defaultValue = "0") int from,
-                                           @Positive @RequestParam (value = "size", defaultValue = "10") int size) {
+    public List<CompilationResponseDto> getCompilations(@RequestParam(value = "pinned", required = false) Boolean pinned,
+                                                        @PositiveOrZero @RequestParam(value = "from", defaultValue = "0") int from,
+                                                        @Positive @RequestParam(value = "size", defaultValue = "10") int size) {
         log.info("GET /admin/compilations pinned:{}; from: {}; size: {}", pinned, from, size);
         List<Compilation> compilationsList = compilationService.getCategories(pinned, from, size);
         return compilationsList.stream()
@@ -64,7 +63,7 @@ public class CompilationController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/compilations/{comId}")
-    public CompilationResponseDto getCompilation(@PathVariable (value = "comId") Long id) {
+    public CompilationResponseDto getCompilation(@PathVariable(value = "comId") Long id) {
         log.info("GET /compilations id: {}", id);
         return CompilationMapper.convertToDto(compilationService.getCompilationById(id));
     }

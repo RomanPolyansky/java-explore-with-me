@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface EventService {
     Event addEvent(Event event, long initiatorId);
+
     List<Event> getEvents(int from, int size, List<Long> users, List<String> states, List<Long> categories,
                           LocalDateTime rangeStart, LocalDateTime rangeEnd);
 
@@ -17,7 +18,7 @@ public interface EventService {
     List<Event> getEventsOfUser(long userId, int from, int size);
 
     List<Event> getEventsPublic(String text, int from, int size, List<Long> categories, Boolean paid, Boolean onlyAvailable,
-                          String sort, LocalDateTime rangeStart, LocalDateTime rangeEnd);
+                                String sort, LocalDateTime rangeStart, LocalDateTime rangeEnd);
 
     Event getEventOfUser(long eventId, long userId);
 

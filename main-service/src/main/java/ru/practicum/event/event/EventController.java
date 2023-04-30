@@ -125,7 +125,7 @@ public class EventController {
         }
         List<Event> eventsList = eventService.getEventsPublic(text, from, size, categories, paid, onlyAvailable, sort, rangeStart, rangeEnd);
         Map<String, Long> viewsMap = getViews(eventsList);
-        setViews(eventsList ,viewsMap);
+        setViews(eventsList, viewsMap);
         if (sort.equals(SortField.VIEWS.name())) {
             Collections.sort(eventsList);
         }
@@ -147,7 +147,7 @@ public class EventController {
         }
         Event event = eventService.getPublishedEventById(eventId);
         Map<String, Long> viewsMap = getViews(List.of(event));
-        setViews(List.of(event) ,viewsMap);
+        setViews(List.of(event), viewsMap);
         return EventMapper.convertToFullDto(event);
     }
 

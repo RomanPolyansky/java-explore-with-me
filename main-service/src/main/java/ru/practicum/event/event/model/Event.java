@@ -39,15 +39,15 @@ public class Event implements Comparable<Event> {
     @Column(name = "event_date")
     private LocalDateTime eventDate;
     @OneToOne(cascade = {CascadeType.ALL})
-    @JoinColumn(name="location_id", nullable=false)
+    @JoinColumn(name = "location_id", nullable = false)
     private Location location;
     @Column(name = "created_on")
     private LocalDateTime createdOn;
     @ManyToOne
-    @JoinColumn(name="category_id", nullable=false)
+    @JoinColumn(name = "category_id", nullable = false)
     private Category category;
     @ManyToOne
-    @JoinColumn(name="initiator_id", nullable=false)
+    @JoinColumn(name = "initiator_id", nullable = false)
     private User initiator;
     @ManyToMany
     @JoinTable(
@@ -59,7 +59,7 @@ public class Event implements Comparable<Event> {
     private String statusStr;
     @Column(name = "published_on")
     private LocalDateTime publishedOn;
-    @OneToMany(mappedBy="event")
+    @OneToMany(mappedBy = "event")
     private List<ParticipationRequest> participationRequests;
     @Transient
     private StateAction stateAction;
@@ -73,7 +73,7 @@ public class Event implements Comparable<Event> {
     }
 
     @PostLoad
-    private void setState(){
+    private void setState() {
         stateAction = StateAction.valueOf(statusStr);
     }
 
@@ -89,20 +89,20 @@ public class Event implements Comparable<Event> {
     }
 
     public Event merge(Event other) {
-        if(other.title != null) title = other.title;
-        if(other.annotation != null) annotation = other.annotation;
-        if(other.description != null) description = other.description;
-        if(other.paid != null) paid = other.paid;
-        if(other.participantLimit != null) participantLimit = other.participantLimit;
-        if(other.requestModeration != null) requestModeration = other.requestModeration;
-        if(other.eventDate != null) eventDate = other.eventDate;
-        if(other.location != null) location = other.location;
-        if(other.createdOn != null) createdOn = other.createdOn;
-        if(other.category != null) category = other.category;
-        if(other.initiator != null) initiator = other.initiator;
-        if(other.statusStr != null) statusStr = other.statusStr;
-        if(other.publishedOn != null) publishedOn = other.publishedOn;
-        if(other.stateAction != null) stateAction = other.stateAction;
+        if (other.title != null) title = other.title;
+        if (other.annotation != null) annotation = other.annotation;
+        if (other.description != null) description = other.description;
+        if (other.paid != null) paid = other.paid;
+        if (other.participantLimit != null) participantLimit = other.participantLimit;
+        if (other.requestModeration != null) requestModeration = other.requestModeration;
+        if (other.eventDate != null) eventDate = other.eventDate;
+        if (other.location != null) location = other.location;
+        if (other.createdOn != null) createdOn = other.createdOn;
+        if (other.category != null) category = other.category;
+        if (other.initiator != null) initiator = other.initiator;
+        if (other.statusStr != null) statusStr = other.statusStr;
+        if (other.publishedOn != null) publishedOn = other.publishedOn;
+        if (other.stateAction != null) stateAction = other.stateAction;
         if (stateAction != null) statusStr = stateAction.name();
         return this;
     }
