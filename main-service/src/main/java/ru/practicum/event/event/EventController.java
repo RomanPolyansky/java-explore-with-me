@@ -75,11 +75,11 @@ public class EventController {
     }
 
     @PatchMapping("/admin/events/{eventId}")
-    public EventResponseFullDto changeEvent(@RequestBody @Validated(Update.class) EventRequestDto eventDto,
+    public EventResponseUpdateDto changeEvent(@RequestBody @Validated(Update.class) EventRequestDto eventDto,
                                             @PathVariable(value = "eventId") long eventId) {
         Event event = EventMapper.convertToEntity(eventDto);
         log.info("PATCH /admin/events of: {}; to {}", eventId, event);
-        return EventMapper.convertToFullDto(eventService.changeEvent(eventId, event));
+        return EventMapper.convertToUpdateDto(eventService.changeEvent(eventId, event));
     }
 
     @ResponseStatus(HttpStatus.OK)

@@ -7,13 +7,13 @@ import java.time.LocalDateTime;
 
 @Data
 public class EventResponseNewDto {
-    private String title;
     private String annotation;
+    private Long category;
     private String description;
-    private Long participantLimit;
-    private Boolean requestModeration = true;
     private LocalDateTime eventDate;
     private Location location;
+    private Long participantLimit;
+    private Boolean requestModeration = true;
     private Boolean paid;
-    private Long category;
+    private String title;
 }
