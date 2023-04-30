@@ -151,6 +151,18 @@ public class EventController {
         return EventMapper.convertToFullDto(event);
     }
 
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/users/{userId}/events")
+    public List<EventResponseShortDto> getEventsOfUser(@PathVariable("userId") long userId,
+                                                       @PositiveOrZero @RequestParam(value = "from", defaultValue = "0") int from,
+                                                       @Positive @RequestParam(value = "size", defaultValue = "10") int size) {
+        log.info("GET /users/{userId}/events of: {}; from: {}; size: {}", userId, from, size);
+        List<Event> eventsList = eventService.getEventsOfUser(userId, from, size);
+        return eventsList.stream()
+                .map(EventMapper::convertToShortDto)
+                .collect(Collectors.toList());
+    }
+
     private void setViews(List<Event> events, Map<String, Long> viewsMap) {
         Map<String, Event> eventMap = new HashMap<>();
         for (Event event : events) {
@@ -183,18 +195,6 @@ public class EventController {
             log.error("Exception - {}", e.getMessage(), e);
         }
         return viewsMap;
-    }
-
-    @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/users/{userId}/events")
-    public List<EventResponseShortDto> getEventsOfUser(@PathVariable("userId") long userId,
-                                                       @PositiveOrZero @RequestParam(value = "from", defaultValue = "0") int from,
-                                                       @Positive @RequestParam(value = "size", defaultValue = "10") int size) {
-        log.info("GET /users/{userId}/events of: {}; from: {}; size: {}", userId, from, size);
-        List<Event> eventsList = eventService.getEventsOfUser(userId, from, size);
-        return eventsList.stream()
-                .map(EventMapper::convertToShortDto)
-                .collect(Collectors.toList());
     }
 }
 
