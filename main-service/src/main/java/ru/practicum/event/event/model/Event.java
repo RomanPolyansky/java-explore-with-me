@@ -103,12 +103,34 @@ public class Event implements Comparable<Event> {
         if (other.statusStr != null) statusStr = other.statusStr;
         if (other.publishedOn != null) publishedOn = other.publishedOn;
         if (other.stateAction != null) stateAction = other.stateAction;
-        if (stateAction != null) statusStr = stateAction.name();
+        stateAction = StateAction.valueOf(statusStr);
         return this;
     }
 
     @Override
     public int compareTo(Event o) {
         return (int) (this.views - o.views);
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "(" +
+                "id = " + id + ", " +
+                "title = " + title + ", " +
+                "annotation = " + annotation + ", " +
+                "description = " + description + ", " +
+                "paid = " + paid + ", " +
+                "participantLimit = " + participantLimit + ", " +
+                "requestModeration = " + requestModeration + ", " +
+                "eventDate = " + eventDate + ", " +
+                "location = " + location + ", " +
+                "createdOn = " + createdOn + ", " +
+                "category = " + category + ", " +
+                "initiator = " + initiator + ", " +
+                "statusStr = " + statusStr + ", " +
+                "publishedOn = " + publishedOn + ", " +
+                "stateAction = " + stateAction + ", " +
+                "confirmedRequests = " + confirmedRequests + ", " +
+                "views = " + views + ")";
     }
 }
