@@ -205,6 +205,11 @@ public class EventServiceImpl implements EventService {
         return setViews(eventList, getViews);
     }
 
+    @Override
+    public List<Event> getEventsInCategory(long catId) {
+        return eventRepository.findAllByCategoryId(catId);
+    }
+
     public void addRequest(HttpServletRequest request) {
         String uri = request.getRequestURI();
         String ip = request.getRemoteAddr();

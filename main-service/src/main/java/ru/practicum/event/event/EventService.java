@@ -28,4 +28,6 @@ public interface EventService {
     Event changeEventByUser(long userId, long eventId, Event event);
 
     List<Event> getAndSetViews(List<Event> eventList);
+
+    List<Event> getEventsInCategory(long catId);
 }
