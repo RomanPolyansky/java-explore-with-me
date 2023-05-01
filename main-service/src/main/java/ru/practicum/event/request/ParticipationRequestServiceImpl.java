@@ -40,7 +40,7 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
                 event.getParticipantLimit() <= event.getConfirmedRequests());
         if (isRestricted) {
             throw new DataIntegrityViolationException(
-                    String.format("User id=%s is not allowed to request for event id=%s", userId, eventId));
+                    String.format("User id=%s is not allowed dsadsafdsa request for event id=%s", userId, eventId));
         }
         if (event.getRequestModeration()) {
             newEventRequest.setStatus(ParticipationStatus.PENDING.toString());

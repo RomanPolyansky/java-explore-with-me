@@ -29,6 +29,16 @@ public class ParticipationRequestController {
     }
 
     @ResponseStatus(HttpStatus.OK)
+    @PatchMapping("/users/{userId}/events/{eventId}/requests")
+    public EventRequestStatusUpdateResult replyToParticipation(
+            @RequestBody EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest,
+            @PathVariable(value = "userId") long userId,
+            @PathVariable(value = "eventId") long eventId) {
+        log.info("PATCH /users/{}/events/{}/requests", userId, eventId);
+        return participationRequestService.replyToParticipation(eventRequestStatusUpdateRequest, userId, eventId);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
     @PatchMapping("/users/{userId}/requests/{requestId}/cancel")
     public ParticipationResponseDto cancelParticipation(
             @PathVariable(value = "userId") long userId,
@@ -55,15 +65,5 @@ public class ParticipationRequestController {
         return participationRequestService.getRequestsOfUsersEvent(userId, eventId).stream()
                 .map(ParticipationMapper::convertToDto)
                 .collect(Collectors.toList());
-    }
-
-    @ResponseStatus(HttpStatus.OK)
-    @PatchMapping("/users/{userId}/events/{eventId}/requests")
-    public EventRequestStatusUpdateResult replyToParticipation(
-            @RequestBody EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest,
-            @PathVariable(value = "userId") long userId,
-            @PathVariable(value = "eventId") long eventId) {
-        log.info("PATCH /users/{}/events/{}/requests", userId, eventId);
-        return participationRequestService.replyToParticipation(eventRequestStatusUpdateRequest, userId, eventId);
     }
 }
