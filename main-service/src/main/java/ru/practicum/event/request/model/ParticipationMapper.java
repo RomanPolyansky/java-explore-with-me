@@ -13,5 +13,4 @@ public class ParticipationMapper {
     public static ParticipationResponseDto convertToDto(ParticipationRequest participationRequest) {
         return modelMapper.map(participationRequest, ParticipationResponseDto.class);
     }
-
 }

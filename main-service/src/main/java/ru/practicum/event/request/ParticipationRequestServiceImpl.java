@@ -8,13 +8,12 @@ import org.springframework.stereotype.Service;
 import ru.practicum.event.event.EventService;
 import ru.practicum.event.event.model.Event;
 import ru.practicum.event.event.model.constants.ParticipationStatus;
-import ru.practicum.event.request.model.EventRequestStatusUpdateRequest;
-import ru.practicum.event.request.model.ParticipationRequest;
-import ru.practicum.event.request.model.QParticipationRequest;
+import ru.practicum.event.request.model.*;
 import ru.practicum.exception.ObjectNotFoundException;
 import ru.practicum.user.UserService;
 import ru.practicum.user.model.User;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -44,7 +43,7 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
             throw new DataIntegrityViolationException(
                     String.format("User id=%s is not allowed to request for event id=%s", userId, eventId));
         }
-        if (event.getRequestModeration())  {
+        if (event.getRequestModeration()) {
             newEventRequest.setStatus(ParticipationStatus.PENDING.toString());
         } else {
             newEventRequest.setStatus(ParticipationStatus.CONFIRMED.toString());
@@ -55,26 +54,37 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
     }
 
     @Override
-    public List<ParticipationRequest> replyToParticipation(EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest,
-                                                           long userId, long eventId) {
+    public EventRequestStatusUpdateResult replyToParticipation(EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest,
+                                                               long userId, long eventId) {
+        List<ParticipationRequest> repliedRequests;
+        ParticipationStatus participationStatusToSet = ParticipationStatus.valueOf(eventRequestStatusUpdateRequest.getStatus());
         Event event = eventService.getPublishedEventById(eventId);
         User user = userService.getUserById(userId);
-        if (event.getInitiator().getId() != userId)
+        if (event.getInitiator().getId() != user.getId()) {
             throw new ObjectNotFoundException(String.format("User id=%s is not initiator of event id=%s", userId, eventId));
-        if (!event.getRequestModeration()) {
-            return getAnyRequestByIds(eventRequestStatusUpdateRequest.getRequestIds());
         }
-        long usersToConfirm = eventRequestStatusUpdateRequest.getRequestIds().size();
+        long usersToRespond = eventRequestStatusUpdateRequest.getRequestIds().size();
         event.countConfirmedRequests();
-        long freeSlots = event.getParticipantLimit() - event.getConfirmedRequests();
-        ParticipationStatus participationStatusToSet = ParticipationStatus.valueOf(eventRequestStatusUpdateRequest.getStatus());
-        if (participationStatusToSet.equals(ParticipationStatus.CONFIRMED)) {
-            if (freeSlots < usersToConfirm) {
-                throw new DataIntegrityViolationException(
-                        String.format("Event id=%s does not have enough slots for %s users", eventId, usersToConfirm));
-            }
-        }
+        checkAvailableSlots(participationStatusToSet, event, usersToRespond);
         List<ParticipationRequest> participationRequests = getAnyRequestByIds(eventRequestStatusUpdateRequest.getRequestIds());
+        changeStatuses(participationStatusToSet, participationRequests);
+
+        repliedRequests = getAnyRequestByIds(eventRequestStatusUpdateRequest.getRequestIds()).stream()
+                .peek(req -> req.setStatus(participationStatusToSet.name()))
+                .collect(Collectors.toList());
+        requestRepository.saveAll(repliedRequests);
+
+        event = eventService.getPublishedEventById(eventId);
+        event.countConfirmedRequests();
+        if (event.getConfirmedRequests().equals(event.getParticipantLimit())) {
+            rejectPendingRequests(eventId);
+        }
+        return new EventRequestStatusUpdateResult(repliedRequests.stream()
+                .map(ParticipationMapper::convertToDto)
+                .collect(Collectors.toList()));
+    }
+
+    private void changeStatuses(ParticipationStatus participationStatusToSet, List<ParticipationRequest> participationRequests) {
         for (ParticipationRequest participationRequest : participationRequests) {
             if (participationRequest.getStatus().equals(ParticipationStatus.PENDING.name())) {
                 participationRequest.setStatus(participationStatusToSet.name());
@@ -82,13 +92,16 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
                 throw new DataIntegrityViolationException("Can reply to PENDING request only");
             }
         }
-        List<ParticipationRequest> savedRequests = requestRepository.saveAll(participationRequests);
-        event = eventService.getPublishedEventById(eventId);
-        event.countConfirmedRequests();
-        if (event.getConfirmedRequests().equals(event.getParticipantLimit())) {
-            rejectPendingRequests(eventId);
+    }
+
+    private void checkAvailableSlots(ParticipationStatus participationStatusToSet, Event event, long usersToRespond) {
+        long freeSlots = event.getParticipantLimit() - event.getConfirmedRequests();
+        if (participationStatusToSet.equals(ParticipationStatus.CONFIRMED)) {
+            if (freeSlots < usersToRespond) {
+                throw new DataIntegrityViolationException(
+                        String.format("Event id=%s does not have enough slots for %s users", event.getId(), usersToRespond));
+            }
         }
-        return savedRequests;
     }
 
     @Override

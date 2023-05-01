@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.event.request.model.EventRequestStatusUpdateRequest;
+import ru.practicum.event.request.model.EventRequestStatusUpdateResult;
 import ru.practicum.event.request.model.ParticipationMapper;
 
 import java.util.List;
@@ -58,13 +59,11 @@ public class ParticipationRequestController {
 
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping("/users/{userId}/events/{eventId}/requests")
-    public List<ParticipationResponseDto> replyToParticipation(
+    public EventRequestStatusUpdateResult replyToParticipation(
             @RequestBody EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest,
             @PathVariable(value = "userId") long userId,
             @PathVariable(value = "eventId") long eventId) {
         log.info("PATCH /users/{}/events/{}/requests", userId, eventId);
-        return participationRequestService.replyToParticipation(eventRequestStatusUpdateRequest, userId, eventId).stream()
-                .map(ParticipationMapper::convertToDto)
-                .collect(Collectors.toList());
+        return participationRequestService.replyToParticipation(eventRequestStatusUpdateRequest, userId, eventId);
     }
 }
