@@ -1,13 +1,18 @@
 package ru.practicum.event.event;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.IterableUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import ru.practicum.StatsClient;
+import ru.practicum.category.CategoryService;
+import ru.practicum.category.model.Category;
 import ru.practicum.event.event.model.Event;
 import ru.practicum.event.event.model.constants.EventState;
 import ru.practicum.event.event.model.QEvent;
@@ -15,15 +20,17 @@ import ru.practicum.event.event.model.constants.StateAction;
 import ru.practicum.exception.ObjectNotFoundException;
 import ru.practicum.location.LocationService;
 import ru.practicum.location.model.Location;
+import ru.practicum.request.RequestStatDto;
 import ru.practicum.user.UserService;
 
+import javax.servlet.http.HttpServletRequest;
+import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class EventServiceImpl implements EventService {
 
@@ -31,18 +38,40 @@ public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
     private final JPAQueryFactory jpaQueryFactory;
     private final LocationService locationService;
+    private final StatsClient statsClient;
+    private final CategoryService categoryService;
+
+    @Autowired
+    public EventServiceImpl(UserService userService, EventRepository eventRepository, JPAQueryFactory jpaQueryFactory,
+                            LocationService locationService,
+                            @Value("${statistics.server_url}") String statsServerUrl,
+                            @Value("${statistics.app_name}") String statsAppName, CategoryService categoryService) {
+        this.userService = userService;
+        this.eventRepository = eventRepository;
+        this.jpaQueryFactory = jpaQueryFactory;
+        this.locationService = locationService;
+        this.categoryService = categoryService;
+        statsClient = new StatsClient(statsServerUrl, statsAppName);
+    }
 
 
     @Override
     public Event addEvent(Event event, long initiatorId) {
         event.setInitiator(userService.getUserById(initiatorId));// throws exception if not found
         Location savedLocation = locationService.addLocation(event.getLocation());
+        if (event.getCategory() != null) {
+            Category savedCategory = categoryService.getCategoryById(event.getCategory().getId());
+            event.setCategory(savedCategory);
+        }
         event.setLocation(savedLocation);
         event.setCreatedOn(LocalDateTime.now());
         event.setStatusStr(EventState.PENDING.name());
+
         Event savedEvent = eventRepository.save(event);
-        log.info("EventRepository saved: {}", savedEvent);
-        return savedEvent;
+        eventRepository.flush();
+        Event eventInRepo = getAnyEventById(savedEvent.getId());
+        log.info("EventRepository saved: {}", eventInRepo);
+        return eventInRepo;
     }
 
     @Override
@@ -77,19 +106,14 @@ public class EventServiceImpl implements EventService {
         }
         eventChangeTo.setPublishedOn(LocalDateTime.now());
         setStatus(eventChangeTo);
+        if (eventChangeTo.getCategory() != null) {
+            Category savedCategory = categoryService.getCategoryById(eventChangeTo.getCategory().getId());
+            eventChangeTo.setCategory(savedCategory);
+        }
         Event mergedEvent = eventInRepo.merge(eventChangeTo);
         log.info("EventRepository had: {}; changing to: {}", eventInRepo, eventChangeTo);
         eventRepository.save(mergedEvent);
         return mergedEvent;
-    }
-
-    @Override
-    public Event getPublishedEventById(long eventId) {
-        Event event = eventRepository.findByIdAndStatusStr(eventId, EventState.PUBLISHED.name())
-                .orElseThrow(() -> new ObjectNotFoundException(String.format("Event with id=%s was not found", eventId))
-                );
-        event.countConfirmedRequests();
-        return event;
     }
 
     @Override
@@ -108,7 +132,8 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<Event> getEventsPublic(String text, int from, int size, List<Long> categories, Boolean isPaid,
-                                 Boolean onlyAvailable, String sort, LocalDateTime rangeStart, LocalDateTime rangeEnd) {
+                                       Boolean onlyAvailable, String sort, LocalDateTime rangeStart,
+                                       LocalDateTime rangeEnd, HttpServletRequest request) {
         BooleanExpression inCategories = isInCategories(categories);
         BooleanExpression hasText = hasText(text);
         List<Event> events = IterableUtils.toList(jpaQueryFactory.selectFrom(QEvent.event)
@@ -119,10 +144,32 @@ public class EventServiceImpl implements EventService {
                 .offset(from)
                 .limit(size)
                 .fetch());
-        return events.stream()
+        List<Event> eventsConfirmedRequests = events.stream()
                 .peek(Event::countConfirmedRequests)
                 .filter(event -> event.getConfirmedRequests() <= event.getParticipantLimit())
                 .collect(Collectors.toList());
+        getAndSetViews(eventsConfirmedRequests);
+        return eventsConfirmedRequests;
+    }
+
+    @Override
+    public Event getPublishedEventByIdPublic(long eventId, HttpServletRequest request) {
+        Event event = eventRepository.findByIdAndStatusStr(eventId, EventState.PUBLISHED.name())
+                .orElseThrow(() -> new ObjectNotFoundException(String.format("Event with id=%s was not found", eventId))
+                );
+        addRequest(request);
+        event.countConfirmedRequests();
+        getAndSetViews(List.of(event));
+        return event;
+    }
+
+    @Override
+    public Event getPublishedEventById(long eventId) {
+        Event event = eventRepository.findByIdAndStatusStr(eventId, EventState.PUBLISHED.name())
+                .orElseThrow(() -> new ObjectNotFoundException(String.format("Event with id=%s was not found", eventId))
+                );
+        event.countConfirmedRequests();
+        return event;
     }
 
     @Override
@@ -152,7 +199,68 @@ public class EventServiceImpl implements EventService {
         }
     }
 
-    private void setStatus(Event event) {
+    @Override
+    public List<Event> getAndSetViews(List<Event> eventList) {
+        Map<String, Long> getViews = getViews(eventList);
+        return setViews(eventList, getViews);
+    }
+
+    public void addRequest(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        String ip = request.getRemoteAddr();
+        try {
+            statsClient.addRequest(uri, ip);
+        } catch (Exception e) {
+            log.error("Exception - {}", e.getMessage(), e);
+        }
+    }
+
+    public List<Event> setViews(List<Event> events, Map<String, Long> viewsMap) {
+        Map<String, Event> eventMap = new HashMap<>();
+        for (Event event : events) {
+            eventMap.put(String.format("/events/%s", event.getId()), event);
+        }
+        for (String viewKey : viewsMap.keySet()) {
+            Event event = eventMap.get(viewKey);
+            event.setViews(viewsMap.getOrDefault(viewKey, 0L));
+        }
+        return new ArrayList<>(eventMap.values());
+    }
+
+    public Map<String, Long> getViews(List<Event> eventsList) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, Long> viewsMap = new HashMap<>();
+
+        try {
+            HttpResponse<String> statResponse = statsClient.getStatistics(
+                    LocalDateTime.now().minusYears(10L),
+                    LocalDateTime.now().plusDays(1L),
+                    eventsList.stream()
+                            .map(Event::getId)
+                            .map(id -> "/events/" + id)
+                            .collect(Collectors.toList()),
+                    true
+            );
+            log.info("GET /stats response : {}", statResponse);
+
+            RequestStatDto[] requestStatDto = objectMapper.readValue(statResponse.body(), RequestStatDto[].class);
+            viewsMap = Arrays.stream(requestStatDto)
+                    .collect(Collectors.toMap(RequestStatDto::getUri, RequestStatDto::getHits));
+        } catch (Exception e) {
+            log.error("Exception - {}", e.getMessage(), e);
+        }
+        return viewsMap;
+    }
+
+    private Event getAnyEventById(long eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new ObjectNotFoundException(String.format("Event with id=%s was not found", eventId))
+                );
+        event.countConfirmedRequests();
+        return event;
+    }
+
+    public void setStatus(Event event) {
         switch (StateAction.valueOf(event.getStateAction())) {
             case PUBLISH_EVENT:
                 event.setState(EventState.PUBLISHED);
@@ -173,14 +281,6 @@ public class EventServiceImpl implements EventService {
     private BooleanExpression hasText(String text) {
         return QEvent.event.annotation.containsIgnoreCase(text)
                 .or(QEvent.event.description.containsIgnoreCase(text));
-    }
-
-    private Event getAnyEventById(long eventId) {
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new ObjectNotFoundException(String.format("Event with id=%s was not found", eventId))
-                );
-        event.countConfirmedRequests();
-        return event;
     }
 
     private BooleanExpression isInStates(List<String> states) {

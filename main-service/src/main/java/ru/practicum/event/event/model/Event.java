@@ -82,6 +82,7 @@ public class Event implements Comparable<Event> {
     }
 
     public Event countConfirmedRequests() {
+        if (participationRequests == null) return this;
         List<ParticipationRequest> filteredPartRequests = participationRequests.stream()
                 .filter(req -> req.getStatus().equals(ParticipationStatus.CONFIRMED.toString()))
                 .collect(Collectors.toList());

@@ -55,7 +55,7 @@ public class CompilationController {
                                                         @PositiveOrZero @RequestParam(value = "from", defaultValue = "0") int from,
                                                         @Positive @RequestParam(value = "size", defaultValue = "10") int size) {
         log.info("GET /admin/compilations pinned:{}; from: {}; size: {}", pinned, from, size);
-        List<Compilation> compilationsList = compilationService.getCategories(pinned, from, size);
+        List<Compilation> compilationsList = compilationService.getCompilations(pinned, from, size);
         return compilationsList.stream()
                 .map(CompilationMapper::convertToDto)
                 .collect(Collectors.toList());

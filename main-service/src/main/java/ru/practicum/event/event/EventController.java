@@ -1,14 +1,11 @@
 package ru.practicum.event.event;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.StatsClient;
 import ru.practicum.constraint.Update;
 import ru.practicum.constraint.UpdateUser;
 import ru.practicum.constraint.validator.SortMethod;
@@ -17,12 +14,10 @@ import ru.practicum.constraint.Create;
 import ru.practicum.event.event.model.constants.EventState;
 import ru.practicum.event.event.model.constants.SortField;
 import ru.practicum.event.event.model.mapping.EventMapper;
-import ru.practicum.request.RequestStatDto;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
-import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -31,19 +26,10 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping
 @RestControllerAdvice
+@AllArgsConstructor
 public class EventController {
 
     private final EventService eventService;
-    private final StatsClient statsClient;
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
-    @Autowired
-    public EventController(EventService eventService,
-                           @Value("${statistics.server_url}") String statsServerUrl,
-                           @Value("${statistics.app_name}") String statsAppName) {
-        this.eventService = eventService;
-        statsClient = new StatsClient(statsServerUrl, statsAppName);
-    }
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/users/{userId}/events")
@@ -120,14 +106,7 @@ public class EventController {
             @Positive @RequestParam(value = "size", defaultValue = "10") int size) {
         log.info("GET /events of: {}; from: {}; size: {}; categories: {}; paid: {}; onlyAvailable: {}; sort: {}; rangeStart: {}; rangeEnd: {}",
                 text, from, size, categories, paid, onlyAvailable, sort, rangeStart, rangeEnd);
-        try {
-            statsClient.addRequest(request.getRequestURI(), request.getRemoteAddr());
-        } catch (Exception ignored) {
-
-        }
-        List<Event> eventsList = eventService.getEventsPublic(text, from, size, categories, paid, onlyAvailable, sort, rangeStart, rangeEnd);
-        Map<String, Long> viewsMap = getViews(eventsList);
-        setViews(eventsList, viewsMap);
+        List<Event> eventsList = eventService.getEventsPublic(text, from, size, categories, paid, onlyAvailable, sort, rangeStart, rangeEnd, request);
         if (sort.equals(SortField.VIEWS.name())) {
             Collections.sort(eventsList);
         }
@@ -142,14 +121,7 @@ public class EventController {
             HttpServletRequest request,
             @PathVariable("eventId") long eventId) {
         log.info("GET /admin/events/{}", eventId);
-        try {
-            statsClient.addRequest(request.getRequestURI(), request.getRemoteAddr());
-        } catch (Exception exception) {
-            log.info("Stats client exception thrown: {}", exception.getMessage());
-        }
-        Event event = eventService.getPublishedEventById(eventId);
-        Map<String, Long> viewsMap = getViews(List.of(event));
-        setViews(List.of(event), viewsMap);
+        Event event = eventService.getPublishedEventByIdPublic(eventId, request);
         return EventMapper.convertToFullDto(event);
     }
 
@@ -163,40 +135,6 @@ public class EventController {
         return eventsList.stream()
                 .map(EventMapper::convertToShortDto)
                 .collect(Collectors.toList());
-    }
-
-    private void setViews(List<Event> events, Map<String, Long> viewsMap) {
-        Map<String, Event> eventMap = new HashMap<>();
-        for (Event event : events) {
-            eventMap.put(String.format("/events/%s", event.getId()), event);
-        }
-        for (String viewKey : viewsMap.keySet()) {
-            Event event = eventMap.get(viewKey);
-            event.setViews(viewsMap.getOrDefault(viewKey, 0L));
-        }
-    }
-
-    private Map<String, Long> getViews(List<Event> eventsList) {
-        Map<String, Long> viewsMap = new HashMap<>();
-        try {
-            HttpResponse<String> statResponse = statsClient.getStatistics(
-                    LocalDateTime.now().minusYears(10L),
-                    LocalDateTime.now().plusDays(1L),
-                    eventsList.stream()
-                            .map(Event::getId)
-                            .map(id -> "/events/" + id)
-                            .collect(Collectors.toList()),
-                    true
-            );
-            log.info("GET /stats response : {}", statResponse);
-
-            RequestStatDto[] requestStatDto = objectMapper.readValue(statResponse.body(), RequestStatDto[].class);
-            viewsMap = Arrays.stream(requestStatDto)
-                    .collect(Collectors.toMap(RequestStatDto::getUri, RequestStatDto::getHits));
-        } catch (Exception e) {
-            log.error("Exception - {}", e.getMessage(), e);
-        }
-        return viewsMap;
     }
 }
 
