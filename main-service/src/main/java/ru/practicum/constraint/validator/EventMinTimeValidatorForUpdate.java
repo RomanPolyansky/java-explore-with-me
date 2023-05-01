@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 public class EventMinTimeValidatorForUpdate implements ConstraintValidator<MinAfterOneHour, LocalDateTime>  {
     @Override
     public boolean isValid(LocalDateTime value, ConstraintValidatorContext context) {
+        if (value == null) return true;
         return value.isAfter(LocalDateTime.now().plusHours(1)) ||
                 value.isEqual(LocalDateTime.now().plusHours(1));
     }
