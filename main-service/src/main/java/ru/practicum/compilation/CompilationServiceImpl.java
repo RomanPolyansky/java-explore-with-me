@@ -58,7 +58,6 @@ public class CompilationServiceImpl implements CompilationService {
                 .offset(from)
                 .limit(size)
                 .fetch());
-
         List<Compilation> foundCompilationsWithViews = foundCompilations.stream()
                 .peek(compilation -> eventService.getAndSetViews(compilation.getEvents()))
                 .collect(Collectors.toList());
@@ -76,12 +75,12 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
-    public Compilation changeCompilation(long comId, Compilation compilation) {
+    public Compilation changeCompilation(long comId, Compilation compilationChangeTo) {
         Compilation compilationInRepo = compilationRepository.findById(comId).orElseThrow(
                 () -> new ObjectNotFoundException(String.format("Compilation with id %s does not exist", comId))
         );
-        compilation.setId(comId);
-        Compilation changedCompilation = compilationRepository.save(compilationInRepo.merge(compilation));
+        compilationChangeTo.setId(comId);
+        Compilation changedCompilation = compilationRepository.save(compilationInRepo.merge(compilationChangeTo));
         log.info("CompilationRepository changed: {}; to {}", compilationInRepo, changedCompilation);
         return changedCompilation;
     }

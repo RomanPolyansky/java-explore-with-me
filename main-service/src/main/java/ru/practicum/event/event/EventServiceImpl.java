@@ -210,6 +210,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<Event> getAndSetViews(List<Event> eventList) {
+        if (eventList == null) return null;
         Map<String, Long> getViews = getViews(eventList);
         return setViews(eventList, getViews);
     }
