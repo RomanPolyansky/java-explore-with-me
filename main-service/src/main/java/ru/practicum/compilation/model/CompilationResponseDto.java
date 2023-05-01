@@ -7,6 +7,7 @@ import java.util.List;
 
 @Data
 public class CompilationResponseDto {
+    private Long id;
     private String title;
     private List<EventResponseShortDto> events;
     private Boolean pinned;
