@@ -55,36 +55,6 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
     }
 
     @Override
-    public ParticipationRequest cancelParticipation(long userId, long requestId) {
-        ParticipationRequest requestInRepo = getAnyRequestByIds(requestId);
-        userService.getUserById(userId);
-        if (requestInRepo.getRequester().getId() != userId) {
-            throw new DataIntegrityViolationException(
-                    String.format("User id=%s is not requester of participation request id=%s", userId, requestId));
-        }
-        requestInRepo.setStatus(ParticipationStatus.CANCELED.name());
-        ParticipationRequest savedParticipationRequest = requestRepository.save(requestInRepo);
-        log.info("ParticipationRequestRepository changed to: {}", savedParticipationRequest);
-        return savedParticipationRequest;
-    }
-
-    @Override
-    public List<ParticipationRequest> getParticipationRequestsOfUser(long userId) {
-        return jpaQueryFactory.selectFrom(QParticipationRequest.participationRequest)
-                .where(QParticipationRequest.participationRequest.requester.id.eq(userId))
-                .fetch();
-    }
-
-    @Override
-    public List<ParticipationRequest> getRequestsOfUsersEvent(long userId, long eventId) {
-        userService.getUserById(userId);
-        Event event = eventService.getPublishedEventById(eventId);
-        if (event.getInitiator().getId() != userId)
-            throw new ObjectNotFoundException(String.format("User id=%s is not initiator of event id=%s", userId, eventId));
-        return event.getParticipationRequests();
-    }
-
-    @Override
     public List<ParticipationRequest> replyToParticipation(EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest,
                                                            long userId, long eventId) {
         Event event = eventService.getPublishedEventById(eventId);
@@ -114,10 +84,41 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
         }
         List<ParticipationRequest> savedRequests = requestRepository.saveAll(participationRequests);
         event = eventService.getPublishedEventById(eventId);
+        event.countConfirmedRequests();
         if (event.getConfirmedRequests().equals(event.getParticipantLimit())) {
             rejectPendingRequests(eventId);
         }
         return savedRequests;
+    }
+
+    @Override
+    public ParticipationRequest cancelParticipation(long userId, long requestId) {
+        ParticipationRequest requestInRepo = getAnyRequestByIds(requestId);
+        userService.getUserById(userId);
+        if (requestInRepo.getRequester().getId() != userId) {
+            throw new DataIntegrityViolationException(
+                    String.format("User id=%s is not requester of participation request id=%s", userId, requestId));
+        }
+        requestInRepo.setStatus(ParticipationStatus.CANCELED.name());
+        ParticipationRequest savedParticipationRequest = requestRepository.save(requestInRepo);
+        log.info("ParticipationRequestRepository changed to: {}", savedParticipationRequest);
+        return savedParticipationRequest;
+    }
+
+    @Override
+    public List<ParticipationRequest> getParticipationRequestsOfUser(long userId) {
+        return jpaQueryFactory.selectFrom(QParticipationRequest.participationRequest)
+                .where(QParticipationRequest.participationRequest.requester.id.eq(userId))
+                .fetch();
+    }
+
+    @Override
+    public List<ParticipationRequest> getRequestsOfUsersEvent(long userId, long eventId) {
+        userService.getUserById(userId);
+        Event event = eventService.getPublishedEventById(eventId);
+        if (event.getInitiator().getId() != userId)
+            throw new ObjectNotFoundException(String.format("User id=%s is not initiator of event id=%s", userId, eventId));
+        return event.getParticipationRequests();
     }
 
     private void rejectPendingRequests(long eventId) {
