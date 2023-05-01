@@ -95,6 +95,7 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
             return getAnyRequestByIds(eventRequestStatusUpdateRequest.getRequestIds());
         }
         long usersToConfirm = eventRequestStatusUpdateRequest.getRequestIds().size();
+        event.countRequests();
         long freeSlots = event.getParticipantLimit() - event.getConfirmedRequests();
         ParticipationStatus participationStatusToSet = ParticipationStatus.valueOf(eventRequestStatusUpdateRequest.getStatus());
         if (participationStatusToSet.equals(ParticipationStatus.CONFIRMED)) {
