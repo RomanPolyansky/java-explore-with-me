@@ -37,9 +37,9 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
         User requester = userService.getUserById(userId);
         ParticipationRequest newEventRequest = new ParticipationRequest(userId, eventId);
         Event event = eventService.getPublishedEventByIdConflict(eventId);
-        event.countConfirmedRequests();
-        boolean isRestricted = requester.getId() == event.getInitiator().getId() ||
-                event.getParticipantLimit() <= event.getConfirmedRequests();
+        event.countRequests();
+        boolean isRestricted = (requester.getId() == event.getInitiator().getId() ||
+                event.getParticipantLimit() <= event.getConfirmedRequests());
         if (isRestricted) {
             throw new DataIntegrityViolationException(
                     String.format("User id=%s is not allowed to request for event id=%s", userId, eventId));

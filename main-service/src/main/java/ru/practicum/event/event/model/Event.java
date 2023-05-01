@@ -14,6 +14,7 @@ import ru.practicum.user.model.User;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Entity
@@ -83,8 +84,20 @@ public class Event implements Comparable<Event> {
 
     public Event countConfirmedRequests() {
         if (participationRequests == null) return this;
+        Predicate<ParticipationRequest> isConfirmed = req -> req.getStatus().equalsIgnoreCase(ParticipationStatus.CONFIRMED.toString());
         List<ParticipationRequest> filteredPartRequests = participationRequests.stream()
-                .filter(req -> req.getStatus().equals(ParticipationStatus.CONFIRMED.toString()))
+                .filter(isConfirmed)
+                .collect(Collectors.toList());
+        confirmedRequests = (long) filteredPartRequests.size();
+        return this;
+    }
+
+    public Event countRequests() {
+        if (participationRequests == null) return this;
+        Predicate<ParticipationRequest> isConfirmed = req -> req.getStatus().equalsIgnoreCase(ParticipationStatus.CONFIRMED.toString());
+        Predicate<ParticipationRequest> isPending = req -> req.getStatus().equalsIgnoreCase(ParticipationStatus.PENDING.toString());
+        List<ParticipationRequest> filteredPartRequests = participationRequests.stream()
+                .filter(isConfirmed.or(isPending))
                 .collect(Collectors.toList());
         confirmedRequests = (long) filteredPartRequests.size();
         return this;
