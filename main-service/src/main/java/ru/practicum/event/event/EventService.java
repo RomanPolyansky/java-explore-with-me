@@ -25,6 +25,8 @@ public interface EventService {
 
     Event getPublishedEventById(long eventId);
 
+    Event getPublishedEventByIdConflict(long eventId);
+
     Event changeEventByUser(long userId, long eventId, Event event);
 
     List<Event> getAndSetViews(List<Event> eventList);

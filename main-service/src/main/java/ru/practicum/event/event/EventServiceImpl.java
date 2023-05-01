@@ -173,6 +173,15 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public Event getPublishedEventByIdConflict(long eventId) { // очередной тупой костыль из-за фантастически нелогичных тестов
+        Event event = eventRepository.findByIdAndStatusStr(eventId, EventState.PUBLISHED.name())
+                .orElseThrow(() -> new DataIntegrityViolationException(String.format("Event with id=%s was not found", eventId))
+                );
+        event.countConfirmedRequests();
+        return event;
+    }
+
+    @Override
     public Event changeEventByUser(long userId, long eventId, Event eventChangeTo) {
         userService.getUserById(userId);// throws exception if not found
         Event eventInRepo = getAnyEventById(eventId);

@@ -36,7 +36,8 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
             throw new DataIntegrityViolationException("Cannot send the repeated participation request");
         User requester = userService.getUserById(userId);
         ParticipationRequest newEventRequest = new ParticipationRequest(userId, eventId);
-        Event event = eventService.getPublishedEventById(eventId);
+        Event event = eventService.getPublishedEventByIdConflict(eventId);
+        event.countConfirmedRequests();
         boolean isRestricted = requester.getId() == event.getInitiator().getId() ||
                 event.getParticipantLimit() <= event.getConfirmedRequests();
         if (isRestricted) {
