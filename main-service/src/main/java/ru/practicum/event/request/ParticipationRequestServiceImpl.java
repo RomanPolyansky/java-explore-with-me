@@ -13,7 +13,6 @@ import ru.practicum.exception.ObjectNotFoundException;
 import ru.practicum.user.UserService;
 import ru.practicum.user.model.User;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
