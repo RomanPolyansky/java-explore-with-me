@@ -14,7 +14,7 @@ public class EventMapper {
 
     public static Event convertToEntity(EventRequestDto eventDto) {
         Event event = modelMapper.map(eventDto, Event.class);
-        event.setCategory(new Category(eventDto.getCategory(), null));
+        if (eventDto.getCategory() != null) event.setCategory(new Category(eventDto.getCategory(), null));
         return event;
     }
 
