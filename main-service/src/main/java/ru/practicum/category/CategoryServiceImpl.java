@@ -14,6 +14,7 @@ import ru.practicum.event.event.model.Event;
 import ru.practicum.exception.ObjectNotFoundException;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -33,6 +34,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Category addCategory(Category category) {
+        checkCategoryNameConflicts(category);
         Category savedCategory = categoryRepository.save(category);
         log.info("CategoryRepository saved: {}", savedCategory);
         return savedCategory;
@@ -62,10 +64,18 @@ public class CategoryServiceImpl implements CategoryService {
         Category categoryInRepo = categoryRepository.findById(catId).orElseThrow(
                 () -> new ObjectNotFoundException(String.format("Category with id %s does not exist", catId))
         );
+        checkCategoryNameConflicts(category);
         category.setId(catId);
         Category changedCategory = categoryRepository.save(merge(categoryInRepo, category));
         log.info("CategoryRepository changed: {}; to {}", categoryInRepo, changedCategory);
         return changedCategory;
+    }
+
+    private void checkCategoryNameConflicts(Category category) {
+        Optional<Category> categoryInRepo = categoryRepository.findByName(category.getName());
+        if (categoryInRepo.isPresent() && category.getId() != categoryInRepo.get().getId()) {
+            throw new DataIntegrityViolationException("Cannot create category with the same name");
+        }
     }
 
     @Override
