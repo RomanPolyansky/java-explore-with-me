@@ -3,6 +3,7 @@ package ru.practicum.request;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.request.entity.Request;
 
@@ -22,6 +23,7 @@ public class RequestController {
         this.requestService = requestService;
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/hit")
     public RequestDto saveRequest(@RequestBody RequestDto requestDto) {
         log.info("POST: /hit with body: {}", requestDto);
@@ -30,6 +32,7 @@ public class RequestController {
         return RequestMapper.convertToDto(requestSaved);
     }
 
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/stats")
     public List<RequestStatDto> getRequestHistory(
             @RequestParam(value = "start") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
