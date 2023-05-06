@@ -75,7 +75,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<Event> getEvents(int from, int size, List<Long> users,List<String> states,
+    public List<Event> getEvents(int from, int size, List<Long> users, List<String> states,
                                  List<Long> categories, LocalDateTime rangeStart, LocalDateTime rangeEnd) {
         BooleanExpression inUsers = isInUsers(users);
         BooleanExpression inCategories = isInCategories(categories);
@@ -191,7 +191,7 @@ public class EventServiceImpl implements EventService {
             throw new DataIntegrityViolationException(String.format("Event id=%s cannot be modified", eventId));
         }
         setStatus(eventChangeTo);
-        Event mergedEvent = merge(eventInRepo ,eventChangeTo);
+        Event mergedEvent = merge(eventInRepo, eventChangeTo);
         log.info("EventRepository had: {}; changing to: {}", eventInRepo, mergedEvent);
         eventRepository.save(mergedEvent);
         return mergedEvent;
