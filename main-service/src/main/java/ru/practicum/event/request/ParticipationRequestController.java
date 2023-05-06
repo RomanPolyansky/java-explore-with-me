@@ -2,6 +2,7 @@ package ru.practicum.event.request;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.event.request.model.EventRequestStatusUpdateRequest;
@@ -33,9 +34,10 @@ public class ParticipationRequestController {
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping("/users/{userId}/events/{eventId}/requests")
     public EventRequestStatusUpdateResult replyToParticipation(
-            @RequestBody EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest,
+            @RequestBody(required = false) EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest,
             @PathVariable(value = "userId") long userId,
             @PathVariable(value = "eventId") long eventId) {
+        if (eventRequestStatusUpdateRequest == null) throw new DataIntegrityViolationException("Method requires body");
         log.info("PATCH /users/{}/events/{}/requests", userId, eventId);
         return participationRequestService.replyToParticipation(eventRequestStatusUpdateRequest, userId, eventId);
     }
