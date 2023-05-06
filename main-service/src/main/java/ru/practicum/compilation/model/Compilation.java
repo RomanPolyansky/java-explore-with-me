@@ -40,15 +40,6 @@ public class Compilation {
         this.pinned = pinned;
     }
 
-    public Compilation merge(Compilation other) {
-        Compilation compilation = new Compilation();
-        if (other.id > 0) compilation.setId(other.getId());
-        if (other.title != null) compilation.setTitle(other.getTitle());
-        if (other.pinned != null) compilation.setPinned(other.getPinned());
-        if (other.events != null) compilation.setEvents(other.getEvents());
-        return compilation;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

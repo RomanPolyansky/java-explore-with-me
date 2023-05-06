@@ -92,37 +92,7 @@ public class Event implements Comparable<Event> {
         return this;
     }
 
-    public Event countRequests() {
-        if (participationRequests == null) return this;
-        Predicate<ParticipationRequest> isConfirmed = req -> req.getStatus().equalsIgnoreCase(ParticipationStatus.CONFIRMED.toString());
-        Predicate<ParticipationRequest> isPending = req -> req.getStatus().equalsIgnoreCase(ParticipationStatus.PENDING.toString());
-        List<ParticipationRequest> filteredPartRequests = participationRequests.stream()
-                .filter(isConfirmed.or(isPending))
-                .collect(Collectors.toList());
-        confirmedRequests = (long) filteredPartRequests.size();
-        return this;
-    }
-
     public Event() {
-    }
-
-    public Event merge(Event other) {
-        if (other.title != null) title = other.title;
-        if (other.annotation != null) annotation = other.annotation;
-        if (other.description != null) description = other.description;
-        if (other.paid != null) paid = other.paid;
-        if (other.participantLimit != null) participantLimit = other.participantLimit;
-        if (other.requestModeration != null) requestModeration = other.requestModeration;
-        if (other.eventDate != null) eventDate = other.eventDate;
-        if (other.location != null) location = other.location;
-        if (other.createdOn != null) createdOn = other.createdOn;
-        if (other.category != null) category = other.category;
-        if (other.initiator != null) initiator = other.initiator;
-        if (other.statusStr != null) statusStr = other.statusStr;
-        if (other.publishedOn != null) publishedOn = other.publishedOn;
-        if (other.state != null) state = other.state;
-        state = EventState.valueOf(statusStr);
-        return this;
     }
 
     @Override

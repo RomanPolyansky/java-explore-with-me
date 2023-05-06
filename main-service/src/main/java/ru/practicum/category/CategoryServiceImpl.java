@@ -63,7 +63,7 @@ public class CategoryServiceImpl implements CategoryService {
                 () -> new ObjectNotFoundException(String.format("Category with id %s does not exist", catId))
         );
         category.setId(catId);
-        Category changedCategory = categoryRepository.save(categoryInRepo.merge(category));
+        Category changedCategory = categoryRepository.save(merge(categoryInRepo, category));
         log.info("CategoryRepository changed: {}; to {}", categoryInRepo, changedCategory);
         return changedCategory;
     }
@@ -79,5 +79,11 @@ public class CategoryServiceImpl implements CategoryService {
         }
         log.info("CategoryRepository deletes: {}", categoryInRepo);
         categoryRepository.deleteById(catId);
+    }
+
+    public Category merge(Category category, Category other) {
+        if (other.getId() > 0) category.setId(other.getId());
+        if (other.getName() != null) category.setName(other.getName());
+        return category;
     }
 }

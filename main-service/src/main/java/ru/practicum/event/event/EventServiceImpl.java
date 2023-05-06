@@ -110,7 +110,7 @@ public class EventServiceImpl implements EventService {
             Category savedCategory = categoryService.getCategoryById(eventChangeTo.getCategory().getId());
             eventChangeTo.setCategory(savedCategory);
         }
-        Event mergedEvent = eventInRepo.merge(eventChangeTo);
+        Event mergedEvent = merge(eventChangeTo, eventChangeTo);
         log.info("EventRepository had: {}; changing to: {}", eventInRepo, eventChangeTo);
         eventRepository.save(mergedEvent);
         return mergedEvent;
@@ -191,8 +191,8 @@ public class EventServiceImpl implements EventService {
             throw new DataIntegrityViolationException(String.format("Event id=%s cannot be modified", eventId));
         }
         setStatus(eventChangeTo);
-        Event mergedEvent = eventInRepo.merge(eventChangeTo);
-        log.info("EventRepository had: {}; changing to: {}", eventInRepo, eventChangeTo);
+        Event mergedEvent = merge(eventInRepo ,eventChangeTo);
+        log.info("EventRepository had: {}; changing to: {}", eventInRepo, mergedEvent);
         eventRepository.save(mergedEvent);
         return mergedEvent;
     }
@@ -316,5 +316,24 @@ public class EventServiceImpl implements EventService {
     private BooleanExpression isInUsers(List<Long> users) {
         return users.isEmpty() ?
                 Expressions.asBoolean(true).isTrue() : QEvent.event.initiator.id.in(users);
+    }
+
+    public Event merge(Event event, Event other) {
+        if (other.getTitle() != null) event.setTitle(other.getTitle());
+        if (other.getAnnotation() != null) event.setAnnotation(other.getAnnotation());
+        if (other.getDescription() != null) event.setDescription(other.getDescription());
+        if (other.getPaid() != null) event.setPaid(other.getPaid());
+        if (other.getParticipantLimit() != null) event.setParticipantLimit(other.getParticipantLimit());
+        if (other.getRequestModeration() != null) event.setRequestModeration(other.getRequestModeration());
+        if (other.getEventDate() != null) event.setEventDate(other.getEventDate());
+        if (other.getLocation() != null) event.setLocation(other.getLocation());
+        if (other.getCreatedOn() != null) event.setCreatedOn(other.getCreatedOn());
+        if (other.getCategory() != null) event.setCategory(other.getCategory());
+        if (other.getInitiator() != null) event.setInitiator(other.getInitiator());
+        if (other.getStatusStr() != null) event.setStatusStr(other.getStatusStr());
+        if (other.getPublishedOn() != null) event.setPublishedOn(other.getPublishedOn());
+        if (other.getState() != null) event.setState(other.getState());
+        event.setState(EventState.valueOf(event.getStatusStr()));
+        return event;
     }
 }

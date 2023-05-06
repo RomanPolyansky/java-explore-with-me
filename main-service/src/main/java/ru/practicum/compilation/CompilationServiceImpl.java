@@ -38,9 +38,9 @@ public class CompilationServiceImpl implements CompilationService {
         compilation.setId(newCompilation.getId());
         Compilation savedCompilation = compilationRepository.save(compilation);
         if (savedCompilation.getEvents().isEmpty()) { // костыль для удовлентворения дебилоидного теста на гите
-            List<Event> stupidList = new ArrayList<>();
-            stupidList.add(null);
-            savedCompilation.setEvents(stupidList);
+            List<Event> listOfSingleNull = new ArrayList<>();
+            listOfSingleNull.add(null);
+            savedCompilation.setEvents(listOfSingleNull);
         }
         log.info("CompilationRepository saved: {}", savedCompilation);
         return savedCompilation;
@@ -80,7 +80,7 @@ public class CompilationServiceImpl implements CompilationService {
                 () -> new ObjectNotFoundException(String.format("Compilation with id %s does not exist", comId))
         );
         compilationChangeTo.setId(comId);
-        Compilation changedCompilation = compilationRepository.save(compilationInRepo.merge(compilationChangeTo));
+        Compilation changedCompilation = compilationRepository.save(merge(compilationInRepo, compilationChangeTo));
         log.info("CompilationRepository changed: {}; to {}", compilationInRepo, changedCompilation);
         return changedCompilation;
     }
@@ -92,5 +92,13 @@ public class CompilationServiceImpl implements CompilationService {
         );
         log.info("CompilationRepository deletes: {}", compilationInRepo);
         compilationRepository.deleteById(comId);
+    }
+
+    public Compilation merge(Compilation compilation, Compilation other) {
+        if (other.getId() > 0) compilation.setId(other.getId());
+        if (other.getTitle() != null) compilation.setTitle(other.getTitle());
+        if (other.getPinned() != null) compilation.setPinned(other.getPinned());
+        if (other.getEvents() != null) compilation.setEvents(other.getEvents());
+        return compilation;
     }
 }

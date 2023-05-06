@@ -36,11 +36,4 @@ public class Category {
     public int hashCode() {
         return Objects.hash(name);
     }
-
-    public Category merge(Category other) {
-        Category category = new Category();
-        if (other.id > 0) category.setId(other.id);
-        if (other.name != null) category.setName(other.name);
-        return category;
-    }
 }

@@ -15,6 +15,7 @@ import ru.practicum.user.model.User;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,7 +36,7 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
         User requester = userService.getUserById(userId);
         ParticipationRequest newEventRequest = new ParticipationRequest(userId, eventId);
         Event event = eventService.getPublishedEventByIdConflict(eventId);
-        event.countRequests();
+        countRequests(event);
         boolean isRestricted = (requester.getId() == event.getInitiator().getId() ||
                 event.getParticipantLimit() <= event.getConfirmedRequests());
         if (isRestricted) {
@@ -158,5 +159,16 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
 
     private List<ParticipationRequest> getAnyRequestByIds(List<Long> requestIds) {
         return requestRepository.findAllById(requestIds);
+    }
+
+    public Event countRequests(Event event) {
+        if (event.getParticipationRequests() == null) return event;
+        Predicate<ParticipationRequest> isConfirmed = req -> req.getStatus().equalsIgnoreCase(ParticipationStatus.CONFIRMED.toString());
+        Predicate<ParticipationRequest> isPending = req -> req.getStatus().equalsIgnoreCase(ParticipationStatus.PENDING.toString());
+        List<ParticipationRequest> filteredPartRequests = event.getParticipationRequests().stream()
+                .filter(isConfirmed.or(isPending))
+                .collect(Collectors.toList());
+        event.setConfirmedRequests((long) filteredPartRequests.size());
+        return event;
     }
 }
