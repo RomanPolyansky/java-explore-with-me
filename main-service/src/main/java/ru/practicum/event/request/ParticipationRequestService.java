@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface ParticipationRequestService {
 
-    ParticipationRequest addParticipationRequest(long eventId, long userId);
+    ParticipationRequest addParticipationRequest(ParticipationRequest newEventRequest);
 
     ParticipationRequest cancelParticipation(long userId, long requestId);
 

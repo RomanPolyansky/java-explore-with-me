@@ -110,7 +110,7 @@ public class EventServiceImpl implements EventService {
             Category savedCategory = categoryService.getCategoryById(eventChangeTo.getCategory().getId());
             eventChangeTo.setCategory(savedCategory);
         }
-        Event mergedEvent = merge(eventChangeTo, eventChangeTo);
+        Event mergedEvent = merge(eventInRepo, eventChangeTo);
         log.info("EventRepository had: {}; changing to: {}", eventInRepo, eventChangeTo);
         eventRepository.save(mergedEvent);
         return mergedEvent;

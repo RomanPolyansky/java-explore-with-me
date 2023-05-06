@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.event.request.model.EventRequestStatusUpdateRequest;
 import ru.practicum.event.request.model.EventRequestStatusUpdateResult;
 import ru.practicum.event.request.model.ParticipationMapper;
+import ru.practicum.event.request.model.ParticipationRequest;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,8 +25,9 @@ public class ParticipationRequestController {
     public ParticipationResponseDto addParticipationRequest(@PathVariable("userId") long userId,
                                                             @RequestParam("eventId") long eventId) {
         log.info("POST /users/{}/requests of event: {}", userId, eventId);
+        ParticipationRequest newEventRequest = new ParticipationRequest(userId, eventId);
         return ParticipationMapper.convertToDto(
-                participationRequestService.addParticipationRequest(eventId, userId));
+                participationRequestService.addParticipationRequest(newEventRequest));
     }
 
     @ResponseStatus(HttpStatus.OK)

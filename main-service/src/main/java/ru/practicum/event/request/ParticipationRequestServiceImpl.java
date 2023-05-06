@@ -29,12 +29,13 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public ParticipationRequest addParticipationRequest(long eventId, long userId) {
+    public ParticipationRequest addParticipationRequest(ParticipationRequest newEventRequest) {
+        long userId = newEventRequest.getRequester().getId();
+        long eventId = newEventRequest.getEvent().getId();
         Optional<ParticipationRequest> participationRequestInRepo = Optional.ofNullable(getAnyRequestByIds(userId, eventId));
         if (participationRequestInRepo.isPresent())
             throw new DataIntegrityViolationException("Cannot send the repeated participation request");
         User requester = userService.getUserById(userId);
-        ParticipationRequest newEventRequest = new ParticipationRequest(userId, eventId);
         Event event = eventService.getPublishedEventByIdConflict(eventId);
         countRequests(event);
         boolean isRestricted = (requester.getId() == event.getInitiator().getId() ||
