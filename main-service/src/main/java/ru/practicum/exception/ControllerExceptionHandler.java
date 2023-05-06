@@ -44,10 +44,10 @@ public class ControllerExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(value = HttpStatus.CONFLICT)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public ErrorMessage methodArgumentNotValidException(MethodArgumentNotValidException e) {
         return new ErrorMessage(
-                HttpStatus.CONFLICT.toString(),
+                HttpStatus.BAD_REQUEST.toString(),
                 "Incorrectly made request.",
                 e.getMessage(),
                 new Date());
