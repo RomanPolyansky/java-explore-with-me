@@ -148,6 +148,9 @@ public class EventServiceImpl implements EventService {
                 .peek(Event::countConfirmedRequests)
                 .filter(event -> event.getConfirmedRequests() <= event.getParticipantLimit())
                 .collect(Collectors.toList());
+        for (Event event : eventsConfirmedRequests) {
+            addRequest(request.getRequestURI() +  "/" + event.getId(), request.getRemoteAddr());
+        }
         getAndSetViews(eventsConfirmedRequests);
         return eventsConfirmedRequests;
     }
@@ -230,6 +233,14 @@ public class EventServiceImpl implements EventService {
         }
     }
 
+    public void addRequest(String uri, String ip) {
+        try {
+            statsClient.addRequest(uri, ip);
+        } catch (Exception e) {
+            log.error("Exception - {}", e.getMessage(), e);
+        }
+    }
+
     public List<Event> setViews(List<Event> events, Map<String, Long> viewsMap) {
         Map<String, Event> eventMap = new HashMap<>();
         for (Event event : events) {
@@ -254,7 +265,7 @@ public class EventServiceImpl implements EventService {
                             .map(Event::getId)
                             .map(id -> "/events/" + id)
                             .collect(Collectors.toList()),
-                    true
+                    false
             );
             log.info("GET /stats response : {}", statResponse);
 
