@@ -38,9 +38,6 @@ public class RequestServiceImpl implements RequestService {
         BooleanExpression inUris;
         if (!uris.isEmpty()) {
             inUris = QRequest.request.uri.in(uris);
-//            if (uris.size() == 1 && uris.get(0).equalsIgnoreCase("/events")) {
-//                inUris = QRequest.request.uri.contains("/events");
-//            }
         } else {
             inUris = Expressions.asBoolean(true).isTrue();
         }
