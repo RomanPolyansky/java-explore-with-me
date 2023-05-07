@@ -67,17 +67,9 @@ public class RequestServiceImpl implements RequestService {
 
         List<RequestStatDto> requestStatDtoList = new ArrayList<>();
         for (RequestStatDto requestStatDto : requestsPerParamMap.keySet()) {
-            requestStatDto.setHits(requestsPerParamMap.get(requestStatDto) + 1);
+            requestStatDto.setHits(requestsPerParamMap.get(requestStatDto));
             requestStatDtoList.add(requestStatDto);
         }
-
-//        for (RequestStatDto request : requestStatDtoList) {
-//            Request newRequest = new Request();
-//            newRequest.setUri(request.getUri());
-//            newRequest.setTimestamp(LocalDateTime.now());
-//            newRequest.setApp(request.getApp());
-//            requestRepository.save(newRequest);
-//        }
 
         log.info("RequestService GET: {} from the Request Repository. From {}. To {}", requestStatDtoList, start, end);
         Collections.sort(requestStatDtoList);

@@ -54,32 +54,11 @@ public class StatsClient {
         pathBuilder.append("?start=").append(start.format(formatter));
         pathBuilder.append("&end=").append(end.format(formatter));
 
-        if (unique) pathBuilder.append("&unique=true");
-
-        if (uris != null && !uris.isEmpty()) {
-            for (String uri : uris) {
-                pathBuilder.append("&uris=").append(uri);
-            }
+        if (unique) {
+            pathBuilder.append("&unique=true");
+        } else {
+            pathBuilder.append("&unique=false");
         }
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .GET()
-                .uri(URI.create(pathBuilder.toString()))
-                .version(HttpClient.Version.HTTP_1_1)
-                .header("Accept", "application/json")
-                .build();
-
-        return client.send(request, handler);
-    }
-
-    public HttpResponse<String> getStatistics(List<String> uris, boolean unique) throws IOException, InterruptedException {
-        StringBuilder pathBuilder = new StringBuilder(serverUrl + "/stats");
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd+HH:mm:ss");
-        pathBuilder.append("?start=").append(LocalDateTime.now().minusYears(100).format(formatter));
-        pathBuilder.append("&end=").append(LocalDateTime.now().plusYears(1).format(formatter));
-
-        if (unique) pathBuilder.append("&unique=true");
 
         if (uris != null && !uris.isEmpty()) {
             for (String uri : uris) {
