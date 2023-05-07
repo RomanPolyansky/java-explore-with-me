@@ -151,6 +151,7 @@ public class EventServiceImpl implements EventService {
         for (Event event : eventsConfirmedRequests) {
             addRequest(request.getRequestURI() +  "/" + event.getId(), request.getRemoteAddr());
         }
+        addRequest(request);
         getAndSetViews(eventsConfirmedRequests);
         return eventsConfirmedRequests;
     }

@@ -11,7 +11,6 @@ import ru.practicum.request.entity.QRequest;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,9 +38,9 @@ public class RequestServiceImpl implements RequestService {
         BooleanExpression inUris;
         if (!uris.isEmpty()) {
             inUris = QRequest.request.uri.in(uris);
-            if (uris.size() == 1 && uris.get(0).equalsIgnoreCase("/events")) {
-                inUris = QRequest.request.uri.contains("/events");
-            }
+//            if (uris.size() == 1 && uris.get(0).equalsIgnoreCase("/events")) {
+//                inUris = QRequest.request.uri.contains("/events");
+//            }
         } else {
             inUris = Expressions.asBoolean(true).isTrue();
         }
@@ -73,8 +72,6 @@ public class RequestServiceImpl implements RequestService {
 
         log.info("RequestService GET: {} from the Request Repository. From {}. To {}", requestStatDtoList, start, end);
         Collections.sort(requestStatDtoList);
-        return requestStatDtoList.stream()
-                .filter(requestStatDto -> requestStatDto.getUri().contains("/events/"))
-                .collect(Collectors.toList());
+        return requestStatDtoList;
     }
 }
