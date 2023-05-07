@@ -110,6 +110,7 @@ public class EventController {
         if (sort.equals(SortField.VIEWS.name())) {
             Collections.sort(eventsList);
         }
+
         return eventsList.stream()
                 .map(EventMapper::convertToShortDto)
                 .collect(Collectors.toList());
