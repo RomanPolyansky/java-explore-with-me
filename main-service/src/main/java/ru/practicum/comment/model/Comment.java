@@ -25,14 +25,17 @@ public class Comment {
     private LocalDateTime createdOn;
     @Column(name = "modified_on")
     private LocalDateTime modifiedOn;
-    public Comment() {
-    }
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User author;
+
     @ManyToOne
     @JoinColumn(name = "event_id")
     private Event event;
+
+    public Comment() {
+    }
 
     @Override
     public String toString() {
