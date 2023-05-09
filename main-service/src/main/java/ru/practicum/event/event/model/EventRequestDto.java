@@ -27,7 +27,7 @@ public class EventRequestDto {
     @NotNull(groups = {Create.class}, message = "'participants_limit' should not be null")
     @Positive(groups = {Create.class}, message = "'participants_limit' should be more than 0")
     private Integer participantLimit;
-    private Boolean requestModeration = true;
+    private Boolean requestModeration;
     @MinAfterTwoHours(groups = {Create.class, UpdateUser.class}, message = "'event_date' should be more in at least after 2 hours")
     @MinAfterOneHour(groups = {Update.class}, message = "'event_date' should be more in at least after 1 hours")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")

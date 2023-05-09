@@ -170,7 +170,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public Event getPublishedEventById(long eventId) {
         Event event = eventRepository.findByIdAndStatusStr(eventId, EventState.PUBLISHED.name())
-                .orElseThrow(() -> new ObjectNotFoundException(String.format("Event with id=%s was not found", eventId))
+                .orElseThrow(() -> new ObjectNotFoundException(String.format("Event with id=%s is not published", eventId))
                 );
         event.countConfirmedRequests();
         return event;
