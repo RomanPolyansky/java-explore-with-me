@@ -30,9 +30,9 @@
 									"        event = await api.publishEvent(event.id);\r",
 									"        const participantUser = await api.addUser(rnd.getUser());\r",
 									"        await api.publishParticipationRequest(event.id, participantUser.id);\r",
-									"        api.addComment(participantUser.id, event.id, rnd.getComment(event.id, participantUser.id));\r",
+									"        await api.addComment(participantUser.id, event.id, rnd.getComment(event.id, participantUser.id));\r",
 									"        await new Promise(resolve => setTimeout(resolve, 1000));\r",
-									"        api.addComment(participantUser.id, event.id, rnd.getComment(event.id, participantUser.id));\r",
+									"        await api.addComment(participantUser.id, event.id, rnd.getComment(event.id, participantUser.id));\r",
 									"        await new Promise(resolve => setTimeout(resolve, 1000));\r",
 									"        comment = await api.addComment(participantUser.id, event.id, rnd.getComment(event.id, participantUser.id));\r",
 									"\r",
@@ -87,12 +87,12 @@
 									"    pm.expect(target.length).to.eql(3);\r",
 									"});\r",
 									"\r",
+									"const comment = pm.collectionVariables.get(\"comment\");\r",
 									"pm.test(\"Данные в ответе должны соответствовать данным в запросе\", function () {\r",
-									"    let comment = pm.collectionVariables.get(\"comment\");\r",
-									"    pm.expect(target[0].id).equal(comment.id);\r",
-									"    pm.expect(target[0].text).equal(comment.text);\r",
-									"    pm.expect(target[0].author.id).equal(comment.author.id);\r",
-									"    pm.expect(target[0].createdOn).equal(comment.createdOn);  \r",
+									"    pm.expect(target[0].id).to.eq(comment.id);\r",
+									"    pm.expect(target[0].text).to.eq(comment.text);\r",
+									"    pm.expect(target[0].author.id).to.eq(comment.author.id);\r",
+									"    pm.expect(target[0].createdOn).to.eq(comment.createdOn);  \r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -127,7 +127,7 @@
 					"response": []
 				},
 				{
-					"name": "Change comment",
+					"name": "Add comment",
 					"event": [
 						{
 							"listen": "prerequest",
@@ -152,6 +152,7 @@
 									"        pm.collectionVariables.set(\"eid\", event.id);\r",
 									"        pm.collectionVariables.set(\"uid\", participantUser.id);\r",
 									"        pm.collectionVariables.set(\"comment\", comment);\r",
+									"        pm.collectionVariables.set(\"currentTime\", rnd.getFutureDateTime(0,0,0));\r",
 									"\r",
 									"        pm.request.body.update({\r",
 									"                mode: 'raw',\r",
@@ -204,11 +205,10 @@
 									"    pm.expect(target).to.have.property('modifiedOn');\r",
 									"});\r",
 									"\r",
-									"const rnd = new RandomUtils();\r",
-									"\r",
 									"pm.test(\"Данные в ответе должны соответствовать данным в запросе\", function () {\r",
+									"    let creationTime = pm.collectionVariables.get(\"currentTime\");\r",
 									"    pm.expect(target.text).equal(source.text);\r",
-									"    pm.expect(target.createdOn).equal(rnd.getFutureDateTime(0,0,0));\r",
+									"    pm.expect(target.createdOn).equal(creationTime);\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -484,6 +484,7 @@
 									"        pm.collectionVariables.set(\"eid\", event.id);\r",
 									"        pm.collectionVariables.set(\"cid\", comment.id);\r",
 									"        pm.collectionVariables.set(\"comment\", comment);\r",
+									"        pm.collectionVariables.set(\"currentTime\", rnd.getFutureDateTime(0,0,0));\r",
 									"    } catch(err) {\r",
 									"        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
 									"    }\r",
@@ -537,11 +538,9 @@
 									"    pm.expect(target).to.have.property('event');\r",
 									"});\r",
 									"\r",
-									"const rnd = new RandomUtils();\r",
-									"\r",
 									"pm.test(\"Данные в ответе должны соответствовать данным в запросе\", function () {\r",
 									"    pm.expect(target.text).equal(requestBody.text);\r",
-									"    pm.expect(target.modifiedOn).equal(rnd.getFutureDateTime(0,0,0));\r",
+									"    pm.expect(target.modifiedOn).equal(pm.collectionVariables.get(\"currentTime\"));\r",
 									"    pm.expect(target.createdOn).equal(source.createdOn);\r",
 									"    pm.expect(target.id).equal(source.id);\r",
 									"    pm.expect(target.createdOn).equal(source.createdOn);\r",
@@ -1344,18 +1343,21 @@
 		},
 		{
 			"key": "request_body",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "comment",
-			"value": "",
+			"value": "1",
 			"type": "string"
 		},
 		{
 			"key": "cid",
 			"value": "1",
 			"type": "string"
+		},
+		{
+			"key": "currentTime",
+			"value": "1"
+		},
+		{
+			"key": "comment",
+			"value": ""
 		}
 	]
 }
