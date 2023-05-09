@@ -1,9 +1,9 @@
 package ru.practicum.request;
 
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.request.entity.Request;
 
@@ -18,24 +18,21 @@ public class RequestController {
 
     private final RequestService requestService;
 
-//    private final ModelMapper modelMapper;
-
-    private final RequestMapper requestMapper;
-
     @Autowired
     public RequestController(RequestService requestService) {
         this.requestService = requestService;
-        this.requestMapper = new RequestMapper(new ModelMapper());
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/hit")
     public RequestDto saveRequest(@RequestBody RequestDto requestDto) {
         log.info("POST: /hit with body: {}", requestDto);
-        Request request = requestMapper.convertToEntity(requestDto);
+        Request request = RequestMapper.convertToEntity(requestDto);
         Request requestSaved = requestService.saveRequest(request);
-        return requestMapper.convertToDto(requestSaved);
+        return RequestMapper.convertToDto(requestSaved);
     }
 
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/stats")
     public List<RequestStatDto> getRequestHistory(
             @RequestParam(value = "start") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,

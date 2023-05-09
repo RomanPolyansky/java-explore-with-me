@@ -5,17 +5,13 @@ import ru.practicum.request.entity.Request;
 
 public class RequestMapper {
 
-    private final ModelMapper modelMapper;
+    private static final ModelMapper modelMapper = new ModelMapper();
 
-    public RequestMapper(ModelMapper modelMapper) {
-        this.modelMapper = modelMapper;
-    }
-
-    RequestDto convertToDto(Request request) {
+    public static RequestDto convertToDto(Request request) {
         return modelMapper.map(request, RequestDto.class);
     }
 
-    Request convertToEntity(RequestDto requestDto) {
+    public static Request convertToEntity(RequestDto requestDto) {
         return modelMapper.map(requestDto, Request.class);
     }
 }

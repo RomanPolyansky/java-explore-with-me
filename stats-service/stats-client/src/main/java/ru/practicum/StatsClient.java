@@ -5,7 +5,6 @@ import ru.practicum.request.RequestDto;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -51,13 +50,15 @@ public class StatsClient {
     public HttpResponse<String> getStatistics(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) throws IOException, InterruptedException {
         StringBuilder pathBuilder = new StringBuilder(serverUrl + "/stats");
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd+HH:mm:ss");
+        pathBuilder.append("?start=").append(start.format(formatter));
+        pathBuilder.append("&end=").append(end.format(formatter));
 
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        pathBuilder.append("?start=").append(URLEncoder.encode(start.format(formatter)));
-        pathBuilder.append("&end=").append(URLEncoder.encode(end.format(formatter)));
-
-        if (unique) pathBuilder.append("&unique=true");
+        if (unique) {
+            pathBuilder.append("&unique=true");
+        } else {
+            pathBuilder.append("&unique=false");
+        }
 
         if (uris != null && !uris.isEmpty()) {
             for (String uri : uris) {

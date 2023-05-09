@@ -1,5 +1,6 @@
 package ru.practicum.request.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import javax.persistence.*;
@@ -28,6 +29,7 @@ public class Request {
     private String ip;
 
     @Column(name = "timestamp")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime timestamp;
 
     @Transient
